@@ -118,8 +118,8 @@ endif
 
 # We also disable FTU when running in Firefox or in debug mode
 ifeq ($(DEBUG),1)
-NOFTU=1
-NOFTUPING=1
+NOFTU=0
+NOFTUPING=0
 PROFILE_FOLDER?=profile-debug
 else ifeq ($(DESKTOP),1)
 NOFTU=1
