@@ -204,7 +204,7 @@
         case 'cardviewbeforeshow':
           // Fade out the homescreen before showing the cards view to avoid
           // having it bleed through during the transition animation.
-          this.getHomescreen().fadeOut();
+          // bug 1031557 - this.getHomescreen().fadeOut();
           break;
         case 'cardviewbeforeclose':
           // Fade homescreen back in before the cards view closes.

@@ -215,6 +215,7 @@
       window.addEventListener('launchapp', this);
       document.body.addEventListener('launchactivity', this, true);
       window.addEventListener('home', this);
+      window.addEventListener('holdhome', this);
       window.addEventListener('appcreated', this);
       window.addEventListener('appterminated', this);
       window.addEventListener('ftuskip', this);
@@ -289,6 +290,7 @@
     uninit: function awm_uninit() {
       window.removeEventListener('launchapp', this);
       window.removeEventListener('home', this);
+      window.removeEventListener('holdhome', this);
       window.removeEventListener('appcreated', this);
       window.removeEventListener('appterminated', this);
       window.removeEventListener('ftuskip', this);
@@ -501,6 +503,7 @@
             return;
           }
 
+          this.debug('homescreen is activeApp? ' + (activeApp && activeApp.isHomescreen));
           if (activeApp && !activeApp.isHomescreen) {
             // Make sure this happens before activity frame is removed.
             // Because we will be asked by a 'activity-done' event from gecko
@@ -513,7 +516,17 @@
             // dispatch event to close activity.
             this.debug('ensure home.');
             homescreenLauncher.getHomescreen().ensure(true);
+            if (activeApp) {
+              // show task manager
+              evt.stopPropagation();
+              this.debug('dispatching taskmanagershow');
+              window.dispatchEvent(new CustomEvent('taskmanagershow'));
+            }
           }
+          break;
+
+        case 'holdhome':
+          window.dispatchEvent(new CustomEvent('taskmanagershow'));
           break;
 
         case 'launchapp':

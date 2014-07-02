@@ -5,7 +5,7 @@
          SecureWindowManager, HomescreenLauncher,
          FtuLauncher, SourceView, ScreenManager, Places, Activities,
          DeveloperHUD, DialerAgent, RemoteDebugger, HomeGesture,
-         VisibilityManager, Storage, InternetSharing, TaskManager,
+         VisibilityManager, Storage, InternetSharing, TaskSwitcher,
          TelephonySettings, SuspendingAppPriorityManager, TTLView,
          MediaRecording, AppWindowFactory, SystemDialogManager,
          applications, Rocketbar, LayoutManager, PermissionManager,
@@ -121,7 +121,7 @@ window.addEventListener('load', function startup() {
   window.sleepMenu.start();
   window.softwareButtonManager = new SoftwareButtonManager().start();
   window.sourceView = new SourceView();
-  window.taskManager = new TaskManager();
+  window.taskManager = new TaskSwitcher();
   window.taskManager.start();
   window.telephonySettings = new TelephonySettings();
   window.telephonySettings.start();

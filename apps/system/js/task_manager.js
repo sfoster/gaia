@@ -6,7 +6,7 @@
 'use strict';
 
 (function(exports) {
-  var DEBUG = false;
+  var DEBUG = true;
 
   /**
    * Represent a stack of apps as cards
@@ -23,13 +23,13 @@
     // Unkillable apps which have attention screen now
     this.attentionScreenApps = [];
 
-    // Listen for settings changes
-    this.onRocketbarEnabledChange = function(value) {
-      debug('rocketbar.enabled: '+ value);
-      this.isRocketbar = value;
-    }.bind(this);
-    SettingsListener.observe('rocketbar.enabled', false,
-                             this.onRocketbarEnabledChange);
+    // // Listen for settings changes
+    // this.onRocketbarEnabledChange = function(value) {
+    //   debug('rocketbar.enabled: '+ value);
+    //   this.isRocketbar = value;
+    // }.bind(this);
+    // SettingsListener.observe('rocketbar.enabled', false,
+    //                          this.onRocketbarEnabledChange);
   }
 
   TaskManager.prototype = Object.create({
@@ -37,7 +37,7 @@
      * Use the carousel-style card view (false) or
      * the Haida-style horizontal task-manager (true)
      */
-    isRocketbar: false,
+    isRocketbar: true,
 
     /**
      * The setting that enables/disables using screenshots vs. icons for the
@@ -296,6 +296,10 @@
 
     // Apps info from Stack Manager.
     var stack = this.stack = StackManager.snapshot();
+    // bug 1031557: homescreen should always be rightmost-card
+    stack.unshift(homescreenLauncher.getHomescreen());
+    debug('homescreen added to stack: ', stack);
+
     this.currentPosition = StackManager.position;
 
     // If we are currently displaying the homescreen but we have apps in the
@@ -329,11 +333,13 @@
     // Close utility tray if it is opened.
     UtilityTray && UtilityTray.hide(true);
 
-    // Now we can switch to the homescreen.
+    // Switch to the homescreen if we're not already on it
     // while the task manager is shown, the active app is the homescreen
     // so selecting an app switches from homescreen to that app
     // which gets us in the right state
-    AppWindowManager.display(null, null, 'to-cardview');
+    if (this.stack.length > 1 && this.currentPosition !== 0) {
+      AppWindowManager.display(null, null, 'to-cardview');
+    }
 
     // We're committed to showing the card switcher.
     // Homescreen fades (shows its fade-overlay) on cardviewbeforeshow events
@@ -345,6 +351,7 @@
     }
 
     // If there is no running app, show "no recent apps" message
+    // XXX bug 1031557 - need to add a empty-state card with empty message?
     if (stack.length) {
       this.element.classList.remove('empty');
     } else {
@@ -360,6 +367,7 @@
     screen.mozLockOrientation(OrientationManager.defaultOrientation);
 
     // First add an item to the cardsList for each running app
+    debug('Adding cards for each app in stack');
     stack.forEach(function(app, position) {
       this.addCard(position, app);
     }, this);
@@ -387,6 +395,7 @@
    */
   TaskManager.prototype.addCard = function cs_addCard(position,
                                                       app) {
+    debug('addCard at position: ' + position, app);
     var config = {
       manager: this,
       position: position,
@@ -699,7 +708,12 @@
         break;
 
       case 'taskmanagershow':
-        this.show();
+        debug('taskmanagershow event, calling .show()');
+        if (this.isShown) {
+          this.show();
+        } else {
+          this.hide();
+        }
         break;
 
       case 'taskmanagerhide':
@@ -727,6 +741,7 @@
         break;
 
       case 'appopen':
+        debug('appopen event, isHomescreen? ', evt.detail.isHomescreen);
         if (!evt.detail.isHomescreen) {
           this.hide(/* immediately */ true, this.newStackPosition);
         }
@@ -1142,7 +1157,7 @@
 
   function debug(message) {
     if (DEBUG) {
-      console.log('TaskManager > \n  ', message);
+      console.log.apply(console, Array.concat(['TaskManager: '], Array.slice(arguments)));
     }
   }
 })(window);
