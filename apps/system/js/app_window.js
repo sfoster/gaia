@@ -1881,7 +1881,9 @@
   AppWindow.prototype.applyStyle = function(nameValues) {
     var dirty = this._dirtyStyleProperties || (this._dirtyStyleProperties = {});
     var style = this.element.style;
+    console.log('applyStyle, with transition: ', getComputedStyle(this.element).transition);
     for (var property in nameValues) {
+      console.log('applyStyle, set ', property, nameValues[property]);
       if (undefined === nameValues[property]) {
         delete style[[property]];
       } else {
