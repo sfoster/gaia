@@ -4,7 +4,7 @@
   var DEBUG = true;
   var windowWidth, windowHeight;
 
-  const SCALE_FACTOR = 0.6;
+  const SCALE_FACTOR = 0.5;
 
   function merge(a, b) {
     for(var key in b) {
@@ -25,11 +25,15 @@
     return str;
   };
 
-  function Card(appWindow){
+  function Card(appWindow, position){
     this.app = appWindow;
+    this.position = position;
     if (!this.element) {
       this.element = Card._createElement();
     }
+    this.transform = new Transform({
+      scale: 0.5
+    });
   }
   Card._createElement = function() {
     var elm = document.createElement('div');
@@ -44,12 +48,9 @@
   Card.prototype.bindApp = function(appWindow) {
     this.element.dataset.appId = appWindow.instanceID;
     this.app = appWindow;
-    this.transform = new Transform({});
     this.element.style.visibility = 'visible';
     this.element.classList.remove('in-transition');
     this.app.enterTaskManager();
-    var appElement = this.app.element,
-        cardElement = this.element;
   };
   Card.prototype._applyStyle = function(nameValues) {
     var style = this.element.style;
@@ -68,6 +69,10 @@
     for (pName in nameValues) {
       pValue = nameValues[pName];
       switch (pName) {
+        case 'marginLeft':
+        case 'marginRight':
+          cardStyle[pName] = pValue;
+          break;
         case 'MozTransform':
           appWindowStyle[pName] = pValue.replace(/(translateY)\([^\)]+\)\s*/gi, '');
           cardStyle[pName] = pValue;
@@ -179,29 +184,30 @@
         case 'select' :
           // FIXME: need to update stack
           // and place nice with window management
-          this.newStackPosition = card.position;
+          this.stackIndex = this.newStackPosition = card.position;
           if (card.position == StackManager.position) {
             console.log('cardAction/select: no change: ', card.app.origin);
             this.hide();
             return;
           }
           console.log('cardAction/select: switch to app: ', card.app.origin);
-          var selectApp = (function() {
-            debug('selectApp transition callback');
-            card.element.removeEventListener('transitionend', selectApp);
-            AppWindowManager.display(
-              card.app,
-              'from-cardview',
-              null
-            );
-            this.hide();
-          }).bind(this);
-          card.element.addEventListener('transitionend', selectApp);
-          setTimeout(function() {
-            card.element.classList.add('in-transition');
-            card.app.leaveTaskManager();
-          }, 0);
-          return;
+          var openSequence = new Sequence(
+            function() {
+              var promise = whenTransitionEnds(card.app.element);
+              card.element.classList.add('in-transition');
+              card.app.leaveTaskManager();
+              return promise;
+            },
+            onNextFrame(function() {
+              AppWindowManager.display(
+                card.app,
+                'from-cardview',
+                null
+              );
+              this.hide();
+            }.bind(this))
+          );
+          openSequence.start();
       }
     },
 
@@ -227,7 +233,7 @@
       // means that all our indices are 1 + StackManager's position
       stack.unshift(homeApp);
       this.currentDisplayed = stackIndex;
-      if (stack.length) {
+      if (stack.length > 1) {
         currentApp = stack[stackIndex];
       }
 
@@ -236,11 +242,7 @@
 
       function positionFor(position, total) {
         var lastIndex = total - 1;
-        var box = {
-          l: SCALE_FACTOR * (lastIndex - position) * (gutter + cardWidth),
-          r: SCALE_FACTOR * position * (gutter + cardWidth)
-        }
-        return box;
+        return (lastIndex - position) * (gutter + cardWidth);
       }
 
       function createCard(appWindow, position, total) {
@@ -249,15 +251,26 @@
         elm.dataset.position = position;
         cardsMap[appWindow.instanceID] = card;
 
-        var box = positionFor(position, total);
-        var rightEdge = box.r;
+        var leftOffset = positionFor(position, total);
         // totalWidth += box.l + cardWidth;
-        debug('card ' + position + ' of ' + position + ' at: ', box);
+        debug('card ' + position + ' of ' + position + ' at: ', leftOffset);
+        debug('card transform ' + card.transform.toString());
 
-        card.applyStyle({
-          right: rightEdge + 'px',
-          left: 'auto'
-        });
+        card.transform.translateX = leftOffset + 'px';
+        var cardStyle = {
+          MozTransform: card.transform.toString()
+        };
+        // TODO: we'll need to update first/last margins
+        // when cards close
+        // it would be better to use :first-of-type / :last-of-type but
+        // we don't currently insert in any significant order
+        if (position == 0) {
+          cardStyle.marginRight = '25%';
+        }
+        if (position == total - 1) {
+          cardStyle.marginLeft = '25%';
+        }
+        card.applyStyle(cardStyle);
         return card;
       };
 
@@ -267,44 +280,48 @@
           homeApp.applyStyle({ backgroundImage: wallpaper });
           screenElm.classList.add('task-manager');
           containerElement.setAttribute('data-task-view', true);
-          console.log('data-task-view applied, layoutCards is next');
         },
         onNextFrame(function() {
           // create the first card initially and
           // start scaling the appWindow (via enterTaskManager)
           var promise = whenTransitionEnds(currentApp.element);
-          console.log('showSequence step 1, enterTaskManager on app: ', currentApp);
           var currentCard = createCard(currentApp, stackIndex, stack.length);
           cards[stackIndex] = currentCard;
           containerElement.appendChild(currentCard.element);
           currentCard.bindApp(currentApp);
-          console.log('/showSequence step 1');
           return promise;
         }),
         onNextFrame(function layoutCards() {
-          console.log('transition done');
-          console.log('layoutCards');
           var frag = document.createDocumentFragment();
           var totalWidth = stack.length * (cardWidth + gutter);
-          // TODO: set scrollLeft to center the current app
+          var card;
 
-          console.log('layoutCards, totalWidth: ', totalWidth);
           for(var i = stack.length-1; i >= 0; i--) {
             if (i == stackIndex) {
               // the current card is already done
               continue;
             }
             console.log('layoutCards, creating card at index: ', i);
-            cards[i] = createCard(stack[i], i, stack.length);
-            console.log('layoutCards, created card: ', cards[i]);
-            frag.appendChild(cards[i].element);
+            card = cards[i] = createCard(stack[i], i, stack.length);
+
+            // XXX hack! cant call fadein() as its not active
+            // and we don't want to change state - but we do want to see it
+            card.app.element.classList.remove('fadeout');
+
+            frag.appendChild(card.element);
           }
           // force overflow of container
           var lastIndex = stack.length - 1;
-          var leftEdge = lastIndex * (cardWidth + gutter);
-          containerElement.style.paddingLeft = leftEdge + 'px';
+          var minWidth = SCALE_FACTOR *
+                         (lastIndex - stackIndex) * (cardWidth + gutter);
+          var rightEdge = SCALE_FACTOR * (
+                            (stack.length * cardWidth) +
+                            (lastIndex * gutter) +
+                            cardWidth / 4
+                          );
+
           // scroll to center the first app
-          containerElement.scrollLeft = leftEdge;
+          containerElement.scrollLeft = minWidth;
 
           // batch up insertion of the cards to reduce reflows
           containerElement.appendChild(frag);
@@ -325,7 +342,7 @@
       });
     },
 
-    hide: function() {
+    hide: function(noTransition) {
       this._isShowing = false;
       debug('hide');
       var currentCard = this._cards[this.currentDisplayed];
@@ -354,25 +371,26 @@
           // put the homescreen background back where it belongs
           // screenElm.style.backgroundImage =
           //     this._cards[0].app.element.style.backgroundImage;
-          containerElement.style.paddingLeft = '';
+
           // reset scroll
           containerElement.scrollLeft = 0;
           // Hack! leave the background there until we're done animating
           if (currentCard.app.isHomescreen) {
             delete currentCard.app._dirtyStyleProperties.backgroundImage;
           }
+          currentCard.app.element.classList.add('exit-task-manager');
           currentCard.app.leaveTaskManager();
           setTimeout(function() {
             currentCard.element.classList.add('in-transition');
           }, 0)
           return promise;
         },
-        // function() {
-        // },
         onNextFrame(function finishExit() {
+          // current app is back at 100%
           // tear down the task cards
           containerElement.style.backgroundColor = '';
           containerElement.removeAttribute('data-task-view');
+          currentCard.app.element.classList.remove('exit-task-manager');
           if (currentCard.app.isHomescreen) {
             delete currentCard.app.element.style.backgroundImage;
           }
@@ -449,8 +467,9 @@
       }
       this.containerWidth = this.switcher.containerElement.clientWidth;
 
-      if (this.switcher.inTransition)
+      if (this.switcher.inTransition) {
         return;
+      }
       debug('/touchstart, setting');
       this.originalAppTransition = this.card.app.element.style.MozTransition;
       this.originalCardTransition = this.card.element.style.MozTransition;
@@ -458,8 +477,9 @@
     },
 
     pan: function cardSwipe_pan(e) {
-      if (1 || this.switcher.inTransition)
+      if (1 || this.switcher.inTransition) {
         return;
+      }
       debug('pan event: ', this.card.app.origin);
       var cardStyle = {};
       var movement = Math.min(this.containerWidth,
@@ -488,12 +508,12 @@
       if (this.switcher.inTransition)
         return;
 
-      var cardStyle = {};
       var card = this.card;
       if (!card) {
-        throw "swipe, this.card not defined";
+        return;
       }
       var self = this;
+      var cardStyle = {};
       var distance = e.detail.start.screenX - e.detail.end.screenX;
       var fastenough = Math.abs(e.detail.vx) > this.TRANSITION_SPEED;
       var farenough = Math.abs(distance) >
@@ -590,16 +610,7 @@
           resolve();
         });
       });
-    }
-    return promise;
-  }
-
-  function callThenYield(fn, thisObj) {
-    return function() {
-      return new Promise(function(resolve, reject) {
-        fn.call(thisObj || window);
-        setTimeout(resolve, 0);
-      });
+      return promise;
     }
   }
 
