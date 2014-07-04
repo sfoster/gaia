@@ -118,6 +118,7 @@
       // the DOMElement for the card switcher
       this.containerElement = document.getElementById('windows'),
       this.screenElement = document.getElementById('screen');
+      this.underlayElement = document.getElementById('screen');
     },
 
     _registerEvents: function() {
@@ -127,7 +128,15 @@
 
     handleEvent: function(evt) {
       switch (evt.type) {
+        case 'lockscreen-appopened':
+        case 'attentionscreenshow':
+          this.attentionScreenApps =
+              AttentionScreen.getAttentionScreenOrigins();
+          this.hide();
+          break;
+
         case 'taskmanagershow':
+          console.log('taskmanagershow handler, is showing? ', this._isShowing);
           if (this._isShowing) {
             this.hide();
           } else {
@@ -171,6 +180,12 @@
           // FIXME: need to update stack
           // and place nice with window management
           this.newStackPosition = card.position;
+          if (card.position == StackManager.position) {
+            console.log('cardAction/select: no change: ', card.app.origin);
+            this.hide();
+            return;
+          }
+          console.log('cardAction/select: switch to app: ', card.app.origin);
           var selectApp = (function() {
             debug('selectApp transition callback');
             card.element.removeEventListener('transitionend', selectApp);
@@ -193,136 +208,192 @@
     show: function() {
       this._isShowing = true;
       debug('show');
-      // get stack + homescreen
 
-      // Apps info from Stack Manager.
-      var stack = this.stack = StackManager.snapshot();
-      stack.unshift(homescreenLauncher.getHomescreen());
-
-      this.stackIndex = StackManager.position;
-      this.currentDisplayed = this.stackIndex + 1;
-
-      var cardWidth = this._windowWidth;
       var screenElm = this.screenElement;
+      var containerElement = this.containerElement;
+      // XXX borrow the system wallpaper for the homescreen appWindow
+      var wallpaper = screenElm.style.backgroundImage;
 
+      // get stack + homescreen
+      var stack = this.stack = StackManager.snapshot();
       var cardsMap = this._cardsMap = {};
       var cards = this._cards = [];
-      var gutter = windowWidth/10;
 
-      var frag = document.createDocumentFragment();
-      var totalWidth = 0;
-      var wallpaper = screenElm.style.backgroundImage;
-      function positionFor(position, total) {
-        var lastIndex = total - 1;
-        var x = SCALE_FACTOR * (lastIndex - position) * (gutter + cardWidth);
-        return x;
+      var homeApp = homescreenLauncher.getHomescreen();
+      var currentApp = homeApp;
+
+      var stackIndex = this.stackIndex = StackManager.position + 1;
+      // put the homescreen at the top of the stack
+      // means that all our indices are 1 + StackManager's position
+      stack.unshift(homeApp);
+      this.currentDisplayed = stackIndex;
+      if (stack.length) {
+        currentApp = stack[stackIndex];
       }
 
-      function eachStackEntry(appWindow, position, total) {
-        if(appWindow.isHomescreen) {
-          appWindow.applyStyle({ backgroundImage: wallpaper });
-        }
+      var cardWidth = this._windowWidth;
+      var gutter = cardWidth/10;
 
+      function positionFor(position, total) {
+        var lastIndex = total - 1;
+        var box = {
+          l: SCALE_FACTOR * (lastIndex - position) * (gutter + cardWidth),
+          r: SCALE_FACTOR * position * (gutter + cardWidth)
+        }
+        return box;
+      }
+
+      function createCard(appWindow, position, total) {
         var card = new Card(appWindow, position);
         var elm = card.element;
         elm.dataset.position = position;
         cardsMap[appWindow.instanceID] = card;
 
-        var leftEdge = positionFor(position, total);
-        totalWidth += leftEdge;
-        debug('card ' + position + ' of ' + total + ' at: ' + leftEdge);
-        // card.transform.scale = SCALE_FACTOR;
+        var box = positionFor(position, total);
+        var rightEdge = box.r;
+        // totalWidth += box.l + cardWidth;
+        debug('card ' + position + ' of ' + position + ' at: ', box);
 
         card.applyStyle({
-          left: leftEdge + 'px'
-          // MozTransform: card.transform.toString()
+          right: rightEdge + 'px',
+          left: 'auto'
         });
-
-        frag.appendChild(elm);
         return card;
       };
 
-      for(var i = stack.length-1; i >= 0; i--) {
-        this._cards.push(eachStackEntry(stack[i], i, stack.length));
-      }
+      // call enterTaskManager to start the scale transition on current app
+      var showSequence = new Sequence(
+        function() {
+          homeApp.applyStyle({ backgroundImage: wallpaper });
+          screenElm.classList.add('task-manager');
+          containerElement.setAttribute('data-task-view', true);
+          console.log('data-task-view applied, layoutCards is next');
+        },
+        onNextFrame(function() {
+          // create the first card initially and
+          // start scaling the appWindow (via enterTaskManager)
+          var promise = whenTransitionEnds(currentApp.element);
+          console.log('showSequence step 1, enterTaskManager on app: ', currentApp);
+          var currentCard = createCard(currentApp, stackIndex, stack.length);
+          cards[stackIndex] = currentCard;
+          containerElement.appendChild(currentCard.element);
+          currentCard.bindApp(currentApp);
+          console.log('/showSequence step 1');
+          return promise;
+        }),
+        onNextFrame(function layoutCards() {
+          console.log('transition done');
+          console.log('layoutCards');
+          var frag = document.createDocumentFragment();
+          var totalWidth = stack.length * (cardWidth + gutter);
+          // TODO: set scrollLeft to center the current app
 
-      this.containerElement.paddingLeft = totalWidth = 'px';
-      this.containerElement.appendChild(frag);
-      this.containerElement.setAttribute('data-task-view', true);
-      this.containerElement.style.backgroundColor = '#999';
+          console.log('layoutCards, totalWidth: ', totalWidth);
+          for(var i = stack.length-1; i >= 0; i--) {
+            if (i == stackIndex) {
+              // the current card is already done
+              continue;
+            }
+            console.log('layoutCards, creating card at index: ', i);
+            cards[i] = createCard(stack[i], i, stack.length);
+            console.log('layoutCards, created card: ', cards[i]);
+            frag.appendChild(cards[i].element);
+          }
+          // force overflow of container
+          var lastIndex = stack.length - 1;
+          var leftEdge = lastIndex * (cardWidth + gutter);
+          containerElement.style.paddingLeft = leftEdge + 'px';
+          // scroll to center the first app
+          containerElement.scrollLeft = leftEdge;
 
-      var finishShow = (function() {
-        this._cards.forEach(function(card) {
-          card.bindApp(card.app);
-        });
+          // batch up insertion of the cards to reduce reflows
+          containerElement.appendChild(frag);
+        }, this),
+        (function finishShow() {
+          cards.forEach(function(card) {
+            card.bindApp(card.app);
+          });
 
-        // scroll over to the current app
-        // FIXME: need to generate the no-apps placeholder card;
-        this.containerElement.scrollLeft = positionFor(1, stack.length);
-
-        this.gestureDetector.startDetecting();
-        ['touchstart', 'pan', 'tap', 'swipe'].forEach(function(evt) {
-          this.containerElement.addEventListener(evt, cardsSwipeManager);
-        }, this);
-
-        debug('/show');
-      }).bind(this);
-      setTimeout(finishShow, 0);
+          this.gestureDetector.startDetecting();
+          ['touchstart', 'pan', 'tap', 'swipe'].forEach(function(evt) {
+            containerElement.addEventListener(evt, cardsSwipeManager);
+          });
+        }).bind(this)
+      );
+      return showSequence.start().then(null, function(err) {
+        console.error('showSequence exception: ', err);
+      });
     },
 
-    hide: function(skipTransition) {
+    hide: function() {
       this._isShowing = false;
       debug('hide');
       var currentCard = this._cards[this.currentDisplayed];
       var screenElm = this.screenElement;
+      var containerElement = this.containerElement;
+      var cards = this._cards;
 
-      ['touchstart', 'pan', 'tap', 'swipe'].forEach(function(evt) {
-        this.containerElement.removeEventListener(evt, cardsSwipeManager);
-      }, this);
-      this.gestureDetector.stopDetecting();
+      var hideSequence = new Sequence(
+        (function unlisten() {
+          ['touchstart', 'pan', 'tap', 'swipe'].forEach(function(evt) {
+            containerElement.removeEventListener(evt, cardsSwipeManager);
+          });
+          this.gestureDetector.stopDetecting();
 
-      // put the homescreen background back where it belongs
-      screenElm.style.backgroundImage =
-          this._cards[0].app.element.style.backgroundImage;
-      screenElm.style.backgroundColor = '';
-      this.containerElement.removeAttribute('data-task-view');
-
-      var hideSwitcher = (function ts_hideSwitcher(){
-        debug('hideSwitcher transition callback');
-        clearTimeout(timeout);
-        currentCard.element.removeEventListener(
-            'transitionend', hideSwitcher);
-        this.containerElement.style.backgroundColor = '';
-
-        var card;
-        debug('hideSwitcher, removing cards');
-        while((card = this._cards.shift())) {
-          if (card.app.isHomescreen) {
-            // relinquish the bg we borrowed
-            card.app.applyStyle({ backgroundImage: '' });
+          // hide the other cards during the transition
+          cards.forEach(function(card) {
+            if (card !== currentCard) {
+              card.applyStyle({
+                visibility: 'hidden'
+              });
+            }
+          });
+        }).bind(this),
+        function startExit() {
+          var promise = whenTransitionEnds(currentCard.app.element);
+          // put the homescreen background back where it belongs
+          // screenElm.style.backgroundImage =
+          //     this._cards[0].app.element.style.backgroundImage;
+          containerElement.style.paddingLeft = '';
+          // reset scroll
+          containerElement.scrollLeft = 0;
+          // Hack! leave the background there until we're done animating
+          if (currentCard.app.isHomescreen) {
+            delete currentCard.app._dirtyStyleProperties.backgroundImage;
           }
-          card.app && card.app.leaveTaskManager();
-          this.containerElement.removeChild(card.element);
-        }
-        debug('/hideSwitcher');
-        this._cardsMap = null;
-      }).bind(this);
+          currentCard.app.leaveTaskManager();
+          setTimeout(function() {
+            currentCard.element.classList.add('in-transition');
+          }, 0)
+          return promise;
+        },
+        // function() {
+        // },
+        onNextFrame(function finishExit() {
+          // tear down the task cards
+          containerElement.style.backgroundColor = '';
+          containerElement.removeAttribute('data-task-view');
+          if (currentCard.app.isHomescreen) {
+            delete currentCard.app.element.style.backgroundImage;
+          }
 
-      // ensure hideSwitcher gets called if we miss the transitionend
-      // or no transition runs at all
-      var timeout = setTimeout(function() {
-        debug('timed out waiting for transitionend, calling hideSwitcher()');
-        hideSwitcher();
-      }, 600);
-      if (skipTransition) {
-        // needed even?
-      } else {
-        currentCard.element.addEventListener('transitionend', hideSwitcher);
-      }
-      setTimeout(function() {
-        currentCard.element.classList.add('in-transition');
-        currentCard.app.leaveTaskManager();
-      }.bind(this), 0);
+          var card;
+          debug('hideSwitcher, removing cards');
+          while((card = this._cards.shift())) {
+            if (card.app.isHomescreen) {
+              // relinquish the bg we borrowed
+              card.app.applyStyle({ backgroundImage: '' });
+            }
+            card.app && card.app.leaveTaskManager();
+            containerElement.removeChild(card.element);
+          }
+          debug('/hideSwitcher');
+          this._cardsMap = null;
+        }, this)
+      );
+      return hideSequence.start().then(null, function(err) {
+        console.warn('Exception in hideSequence: ', err);
+      });
     },
     cardById: function(id) {
       return this._cardsMap[id];
@@ -387,20 +458,23 @@
     },
 
     pan: function cardSwipe_pan(e) {
-      if (this.switcher.inTransition)
+      if (1 || this.switcher.inTransition)
         return;
       debug('pan event: ', this.card.app.origin);
       var cardStyle = {};
       var movement = Math.min(this.containerWidth,
                               Math.abs(e.detail.absolute.dx));
-      cardStyle.left = e.detail.absolute.dx + 'px';
-      this.card.applyStyle(cardStyle);
-      var self = this;
-      var card = self.card;
-      card.element.addEventListener('transitionend', function transitionEnded() {
-        card.element.removeEventListener('transitionend', transitionEnded);
-        self.resetCard();
-      });
+      // scroll go here
+      // this.containerElement.style.transform = 'translateX(' +
+      //                                         e.detail.absolute.dx +
+      //                                         'px)';
+      // this.card.applyStyle(cardStyle);
+      // var self = this;
+      // var card = self.card;
+      // card.element.addEventListener('transitionend', function transitionEnded() {
+      //   card.element.removeEventListener('transitionend', transitionEnded);
+      //   self.resetCard();
+      // });
     },
 
     tap: function cardSwipe_tap(e) {
@@ -416,6 +490,9 @@
 
       var cardStyle = {};
       var card = this.card;
+      if (!card) {
+        throw "swipe, this.card not defined";
+      }
       var self = this;
       var distance = e.detail.start.screenX - e.detail.end.screenX;
       var fastenough = Math.abs(e.detail.vx) > this.TRANSITION_SPEED;
@@ -426,6 +503,7 @@
         // Werent far or fast enough to delete, restore
         var time = Math.abs(distance) / this.TRANSITION_SPEED;
         var transition = 'left ' + time + 'ms linear';
+
         cardStyle.MozTransition = transition;
         cardStyle.left = '0px';
         cardStyle.opacity = 1;
@@ -445,6 +523,97 @@
       debug('TODO: delete card:', this.card);
     }
   };
+
+  // Flow control for a series of steps that may return promises
+  function Sequence() {
+    var sequence = Array.slice(arguments);
+    var aborted = false;
+    sequence.abort = function() {
+      aborted = true;
+      this.length = 0;
+      if (typeof this.onabort === 'function') {
+        this.onabort();
+      }
+    };
+    sequence.complete = function(result) {
+      if(!aborted && typeof this.oncomplete === 'function') {
+        this.oncomplete(result);
+      }
+    };
+    sequence.fail = function(reason) {
+      this.complete(reason);
+    };
+    sequence.next = function(previousTaskResult) {
+      var result, exception;
+      if (aborted) {
+        return;
+      }
+      var task = this.shift();
+      if (task) {
+        try {
+          result = task.apply(null, arguments);
+        } catch(e) {
+          exception = e;
+        }
+        if (exception) {
+          this.fail(exception);
+        } else if (result && typeof result.then === 'function') {
+          result.then(this.next.bind(this), this.fail.bind(this));
+        } else {
+          this.next(result);
+        }
+      } else {
+        this.complete(previousTaskResult);
+      }
+    };
+    sequence.start = function() {
+      var p = new Promise(function(resolve, reject) {
+        sequence.oncomplete = function(outcome) {
+          if (typeof outcome === 'object' && outcome instanceof Error) {
+            reject(outcome);
+          } else {
+            resolve(outcome);
+          }
+        };
+        sequence.next();
+      });
+      return p;
+    };
+    return sequence;
+  }
+
+  function onNextFrame(fn, thisObj) {
+    return function() {
+      var promise = new Promise(function(resolve, reject) {
+        requestAnimationFrame(function() {
+          fn.call(thisObj || window);
+          resolve();
+        });
+      });
+    }
+    return promise;
+  }
+
+  function callThenYield(fn, thisObj) {
+    return function() {
+      return new Promise(function(resolve, reject) {
+        fn.call(thisObj || window);
+        setTimeout(resolve, 0);
+      });
+    }
+  }
+
+  function whenTransitionEnds(elem, timeout) {
+    var promise = new Promise(function(resolve, reject) {
+      elem.addEventListener('transitionend', function onEnd(evt) {
+        clearTimeout(timerId);
+        elem.removeEventListener('transitionend', onEnd);
+        resolve();
+      });
+      var timerId = setTimeout(resolve, timeout || 1000);
+    });
+    return promise;
+  }
 
   function debug(message) {
     if (DEBUG) {

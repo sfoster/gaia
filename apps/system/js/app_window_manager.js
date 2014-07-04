@@ -81,6 +81,7 @@
      */
     display: function awm_display(newApp, openAnimation, closeAnimation) {
       this._dumpAllWindows();
+      console.log("AWM display, appCurrent is ", this._activeApp && this._activeApp.origin, this._activeApp == newApp)
       var appCurrent = this._activeApp, appNext = newApp ||
         homescreenLauncher.getHomescreen(true);
 

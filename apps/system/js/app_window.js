@@ -1842,7 +1842,9 @@
    * Make adjustments to display inside the task manager
    */
   AppWindow.prototype.enterTaskManager = function aw_enterTaskManager() {
-    this._dirtyStyleProperties = {};
+    if (!this._dirtyStyleProperties) {
+      this._dirtyStyleProperties = {};
+    }
     if (this.element) {
       this.element.classList.add('in-task-manager');
     }
@@ -1852,10 +1854,9 @@
    * Remove adjustments made to display inside the task manager
    */
   AppWindow.prototype.leaveTaskManager = function aw_leaveTaskManager() {
-    if (this.element) {
+    if (this.element && this.element.classList.contains('in-task-manager')) {
       this.element.classList.remove('in-task-manager');
       this.unapplyStyle(this._dirtyStyleProperties);
-      this._dirtyStyleProperties = null;
     }
   };
 
@@ -1881,16 +1882,21 @@
   AppWindow.prototype.applyStyle = function(nameValues) {
     var dirty = this._dirtyStyleProperties || (this._dirtyStyleProperties = {});
     var style = this.element.style;
-    console.log('applyStyle, with transition: ', getComputedStyle(this.element).transition);
-    for (var property in nameValues) {
-      console.log('applyStyle, set ', property, nameValues[property]);
-      if (undefined === nameValues[property]) {
-        delete style[[property]];
-      } else {
-        style[property] = nameValues[property];
+    var property;
+    this.debug('applyStyle with names: ', Object.keys(nameValues).join(', '));
+    try {
+      for (property in nameValues) {
+        dirty[property] = true;
+        if (undefined === nameValues[property]) {
+          delete style[[property]];
+        } else {
+          style[property] = nameValues[property];
+        }
       }
-      dirty[property] = true;
+    } catch (ex) {
+      console.warn('Exception applying style: ', property, nameValues[property]);
     }
+    console.log('applyStyle for ' + this.origin + ', dirty: ', this._dirtyStyleProperties);
   };
 
   /**
@@ -1899,10 +1905,12 @@
    * @memberOf AppWindow.prototype
    */
   AppWindow.prototype.unapplyStyle = function(nameValues) {
+    this.debug('unapplyStyle with names: ', Object.keys(nameValues).join(', '));
     var style = this.element.style;
     for (var pname in nameValues) {
       style[pname] = '';
       delete style[pname];
+      delete nameValues[name];
     }
   };
 

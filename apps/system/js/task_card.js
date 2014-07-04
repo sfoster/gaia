@@ -83,6 +83,14 @@
     this.app.enterTaskManager();
     return this.element;
   };
+  TaskCard.prototype.bindApp = function(appWindow) {
+    this.element.dataset.appId = appWindow.instanceID;
+    this.app = appWindow;
+    this.transform = new Transform({});
+    this.element.style.visibility = 'visible';
+    this.element.classList.remove('in-transition');
+    this.app.enterTaskManager();
+  };
 
   TaskCard.prototype._fetchElements = function tc__fetchElements() {
     this.headerContent = this.element.querySelector('header.card-header');
