@@ -146,9 +146,10 @@
   transform-origin: 50% 0;
   transition-delay: 0.1s;
   will-change: transform, opacity;
-  margin-top: 2.4rem 0 0 0;
+  margin-top: 2.4rem;
   position: absolute;
   top: 2.4rem;
+  height: calc(200% - 4.8rem);
   left: 0;
   z-index: 2044;
   opacity: 1;
@@ -167,39 +168,38 @@
 }
 
 /*
- rules for task cards that aren't in play in this prototype
+ rules for 1.4-ish task cards
  */
 
-#screen.task-manager #windows[data-task-view] li.card > section.card-inner {
+#windows[data-task-view] .card > section.card-inner {
   position: relative;
   top: 0;
-  left: 25%;
-  width: 50%;
+  left: 0;
+  width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
-#screen.task-manager #windows[data-task-view] .card .card-header {
+#windows[data-task-view] .card .card-header {
   position: absolute;
   top: auto;
-  bottom: 50%;
+  bottom: 75%;
   left: 0;
   width: 100%;
-  padding-bottom: 2.5rem;
+  padding-bottom: 10rem;
   -moz-box-sizing: border-box;
-  display: none;
+  transform: scale(2);
 }
 
-#screen.task-manager #windows[data-task-view] .card .appPreview {
-  display: block;
-  background-color: orange;
-}
-
-#screen.task-manager #windows[data-task-view] li.card[data-card-position='current'] .card-header {
+#windows[data-task-view] .card .appPreview {
   display: block;
 }
 
-#screen.task-manager #windows[data-task-view] .card h1.title {
+#windows[data-task-view] div.card[data-card-position='current'] .card-header {
+  display: block;
+}
+
+#windows[data-task-view] .card h1.title {
   position: static;
   z-index: auto;
   text-align: center;
@@ -209,11 +209,11 @@
   overflow-x: hidden;
 }
 
-#screen.task-manager #windows[data-task-view] .card p.subtitle {
+#windows[data-task-view] .card p.subtitle {
   display: none;
 }
 
-#screen.task-manager #windows[data-task-view] .card > .appIconView {
+#windows[data-task-view] .card > .appIconView {
   position: absolute;
   top: calc(33.2rem - 20px);
   left: calc(50% - 20px);
@@ -226,17 +226,17 @@
   z-index: 1;
 }
 
-#screen.task-manager #windows[data-task-view] .screenshotView {
+#windows[data-task-view] .screenshotView {
   display: none;
 }
 
-#screen.task-manager #windows[data-task-view] .card-tray {
+#windows[data-task-view] .card-tray {
   position: absolute;
-  /* position in vertical middle to align with app/screenshot */
-  top: calc(50% - 4rem);
+  top: calc(50% + 144px);/* SWAG */
   left: 0;
   height: 3rem;
   width: 100%;
+  border-top: 1px #333 solid;
   transform-origin: 50% 0;
   pointer-events: auto;
   overflow: visible;
@@ -244,9 +244,10 @@
   padding: 0;
   -moz-box-sizing: border-box;
   color: #fff;
+  transform: scale(2);
 }
 
-#screen.task-manager #windows[data-task-view] .card-tray > menu.buttonbar {
+#windows[data-task-view] .card-tray > menu.buttonbar {
   height: 3rem;
   margin: 0;
   padding: 0;
@@ -260,20 +261,19 @@
   width: 20%;
   height: 100%;
   border: none;
-  display: none;
   position: absolute;
   top: 0;
   z-index: 99999;
 }
-#screen.task-manager #windows[data-task-view] .card-tray .close-button {
+#windows[data-task-view] .card-tray .close-button {
   background-image: url(../task-manager/close.png);
   left: 0.8rem;
 }
-#screen.task-manager #windows[data-task-view] .card-tray .favorite-button {
+#windows[data-task-view] .card-tray .favorite-button {
   background-image: url(../task-manager/favorite.png);
   right: 0.8rem;
 }
-#screen.task-manager #windows[data-task-view] .card-tray > button.appIcon {
+#windows[data-task-view] .card-tray > button.appIcon {
   top: 1rem;
   left: calc(50% - 2rem);
   width: 4rem;
@@ -289,8 +289,8 @@
   z-index: 99999;
 }
 
-#screen.task-manager #windows[data-task-view] li.card[data-card-position='current'] .close-button,
-#screen.task-manager #windows[data-task-view] li.card[data-card-position='current'] .favorite-button {
+#screen.task-manager #windows[data-task-view] div.card[data-card-position='current'] .close-button,
+#screen.task-manager #windows[data-task-view] div.card[data-card-position='current'] .favorite-button {
   display: block;
 }
 

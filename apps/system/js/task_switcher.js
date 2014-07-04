@@ -45,9 +45,107 @@
     elm.style.height = windowHeight/SCALE_FACTOR + 'px';
     return elm;
   };
+  Card.prototype = Object.create(BaseUI.prototype);
+  Card.prototype.constructor = Card;
+
+  /**
+   * @type {String}
+   * @memberof Card.prototype
+   */
+  Card.prototype.EVENT_PREFIX = 'card-';
+
+  Card.prototype._template = '<section class="card-inner">' +
+    '<header class="card-header"><h1 class="title">{title}</h1>' +
+    '<p class="subtitle">{subTitle}</p></header>' +
+    '<div class="appPreview"></div>' +
+    '<footer class="card-tray">'+
+      '<button class="appIcon" data-button-action="select" ' +
+      '   style="background-image:{iconValue}">' +
+      '</button>' +
+      '<menu class="buttonbar">' +
+        '<button class="close-button" data-button-action="close" ' +
+        '   role="button" ' +
+        '   style="visibility: {closeButtonVisibility}"></button>' +
+        '<button class="favorite-button" data-button-action="favorite" ' +
+        '   role="button" ' +
+        '   style="visibility: {favoriteButtonVisibility}"></button>' +
+    '</menu></footer>' +
+  '</section>';
+
+  Card.prototype._registerEvents = function tc__registerEvents() {
+  };
+  Card.prototype._unregisterEvents = function c__registerEvents() {
+  };
+
+  Card.prototype._fetchElements = function tc__fetchElements() {
+    this.headerContent = this.element.querySelector('header.card-header');
+    this.footerContent = this.element.querySelector('footer.card-tray');
+    this.footerMenu = this.element.querySelector('.buttonbar');
+  };
+
+  /**
+   * Populate properties on the instance before templating
+   * @memberOf Card.prototype
+   */
+  Card.prototype._populateViewData = function() {
+    var app = this.app;
+    this.title = app.name,
+    this.subTitle = '';
+    this.iconValue = 'none';
+    this.closeButtonVisibility = 'visible';
+    this.favoriteButtonVisibility = 'visible';
+    this.viewClassList = [];
+
+    // app icon overlays screenshot by default
+    // and will be removed if/when we display the screenshot
+    var iconURI = CardsHelper.getIconURIForApp(this.app);
+    if (iconURI) {
+        this.iconValue = 'url(' + iconURI + ')';
+    }
+  };
+
+  /**
+   * Build a card representation of an app window.
+   * @memberOf Card.prototype
+   */
+  Card.prototype.render = function() {
+    this.publish('willrender');
+    var elem = this.element;
+    // we maintaine position value on the instance and on the element.dataset
+    elem.dataset.position = this.position;
+
+    // we maintaine origin value on the instance and on the element.dataset
+    elem.dataset.origin = this.app.origin;
+
+    this._populateViewData();
+
+    // populate the view
+    elem.innerHTML = this.view();
+    this.viewClassList.forEach(function(cls) {
+      elem.classList.add(cls);
+    });
+
+    this._fetchElements();
+    this._registerEvents();
+    this.publish('rendered');
+    return elem;
+  };
+
+  /**
+   * Card html view - builds the innerHTML for a card element
+   * @memberOf Card.prototype
+   */
+  Card.prototype.view = function c_view() {
+    var viewData = this;
+    return this._template.replace(/\{([^\}]+)\}/g, function(m, key) {
+        return viewData[key];
+    });
+  };
+
   Card.prototype.bindApp = function(appWindow) {
     this.element.dataset.appId = appWindow.instanceID;
     this.app = appWindow;
+    this.render();
     this.element.style.visibility = 'visible';
     this.element.classList.remove('in-transition');
     this.app.enterTaskManager();
@@ -69,10 +167,6 @@
     for (pName in nameValues) {
       pValue = nameValues[pName];
       switch (pName) {
-        case 'marginLeft':
-        case 'marginRight':
-          cardStyle[pName] = pValue;
-          break;
         case 'MozTransform':
           appWindowStyle[pName] = pValue.replace(/(translateY)\([^\)]+\)\s*/gi, '');
           cardStyle[pName] = pValue;
@@ -158,8 +252,11 @@
 
     handleTap: function(evt) {
       var target = evt.touches ? evt.touches[0].target : evt.target;
+      // hack-central
+      var node = target.classList.contains('card-inner') ? target.parentNode :
+                 target;
       console.log('handleTap: looking up card from event target: ', target);
-      var id = target.dataset.appId;
+      var id = node.dataset.appId;
       var card = id && this.cardById(id);
       if (card) {
         debug('tap card: ', card.app.origin);
@@ -167,7 +264,7 @@
         cardsSwipeManager.resetCard();
         this.cardAction(card, 'select');
       } else {
-        debug('tap on non-card element: ', target);
+        debug('tap on non-card element: ', node);
       }
     },
 
@@ -264,12 +361,13 @@
         // when cards close
         // it would be better to use :first-of-type / :last-of-type but
         // we don't currently insert in any significant order
-        if (position == 0) {
-          cardStyle.marginRight = '25%';
-        }
-        if (position == total - 1) {
-          cardStyle.marginLeft = '25%';
-        }
+        // if (position == 0) {
+        //   cardStyle.marginRight = '25%';
+        // }
+        // if (position == total - 1) {
+        //   cardStyle.marginLeft = '25%';
+        // }
+
         card.applyStyle(cardStyle);
         return card;
       };
@@ -459,10 +557,13 @@
       e.preventDefault();
       debug('touchstart, e.type: ', e.type);
       var target = e.touches[0].target;
-      var id = target.dataset.appId;
+      // hack-central
+      var node = target.classList.contains('card-inner') ? target.parentNode :
+                 target;
+      var id = node.dataset.appId;
       this.card = id && this.switcher.cardById(id);
       if (!this.card) {
-        debug('touchstart on non-card element? ', target);
+        debug('touchstart on non-card element? ', node);
         return;
       }
       this.containerWidth = this.switcher.containerElement.clientWidth;
