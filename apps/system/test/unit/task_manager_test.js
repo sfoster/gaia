@@ -58,8 +58,8 @@ function failOnReject(err) {
 suite('system/TaskManager >', function() {
   var fakeInnerHeight = 200;
 
-  var screenNode, windowsNode, realMozLockOrientation, realScreenLayout, realMozSettings,
-      realSettingsListener;
+  var screenNode, windowsNode, realMozLockOrientation, realScreenLayout,
+      realMozSettings, realSettingsListener;
   var cardsView, cardsList;
   var originalLockScreen;
   var ihDescriptor;
@@ -299,6 +299,7 @@ suite('system/TaskManager >', function() {
     screenNode.id = 'screen';
     windowsNode = document.createElement('div');
     windowsNode.id = 'windows';
+
     cardsView = document.createElement('div');
     cardsView.id = 'cards-view';
 
@@ -309,6 +310,7 @@ suite('system/TaskManager >', function() {
     screenNode.appendChild(cardsView);
     screenNode.appendChild(windowsNode);
     document.body.appendChild(screenNode);
+
     realScreenLayout = window.ScreenLayout;
     window.ScreenLayout = MockScreenLayout;
     realMozLockOrientation = screen.mozLockOrientation;
@@ -337,6 +339,7 @@ suite('system/TaskManager >', function() {
         return MockNavigatorSettings.createLock();
       }
     };
+
 
     requireApp('system/js/cards_helper.js');
     requireApp('system/js/base_ui.js');
@@ -604,7 +607,6 @@ suite('system/TaskManager >', function() {
     suite('populated task manager using task strip >', function() {
       setup(function(done) {
         taskManager.onTaskStripEnabled(true);
-        assert.isFalse(taskManager.isShown(), 'taskManager isnt showing yet');
         waitForEvent(window, 'cardviewshown')
           .then(function() { done(); }, failOnReject);
         taskManager.show();
@@ -870,13 +872,10 @@ suite('system/TaskManager >', function() {
         });
       });
 
-      var target = cardsList.firstElementChild;
-      var tapEvent = new CustomEvent('tap');
-
       console.log('displays the new app before dismissing the task manager');
       taskManager.listUI.handleEvent({
         type: 'tap',
-        target: target
+        target: cardsList.firstElementChild
       });
     });
   });

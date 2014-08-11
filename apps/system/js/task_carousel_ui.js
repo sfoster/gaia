@@ -166,14 +166,13 @@
   };
 
   TaskCarouselUI.prototype.show = function() {
-    var cardsView = this.element;
-    var stack = this.manager.stack;
-    console.log('TCUI show, currentPosition: ', this.manager.currentPosition);
-    this.currentDisplayed = this.currentPosition = this.manager.currentPosition;
-    if (cardsView.classList.contains('active')) {
-      // no change
+    if (this._showing) {
       return;
     }
+    var cardsView = this.element;
+    var stack = this.stack = this.manager.stack;
+    console.log('TCUI show, currentPosition: ', this.manager.currentPosition);
+    this.currentDisplayed = this.manager.currentPosition;
 
     this.screenElement.classList.add('cards-view');
     // If there is no running app, show "no recent apps" message
@@ -285,10 +284,11 @@
     // Fix for non selectable cards when we remove the last card
     // Described in https://bugzilla.mozilla.org/show_bug.cgi?id=825293
     var cardsLength = cardNodes.length;
+    var currentPosition = this.currentPosition;
     if (cardsLength === this.currentDisplayed) {
-      this.currentPosition = Math.max(0, this.currentPosition - 1);
-      this.manager.currentPosition = this.currentPosition;
-      this.currentDisplayed = this.currentPosition;
+      currentPosition = Math.max(0, currentPosition - 1);
+      this.manager.currentPosition = currentPosition;
+      this.currentDisplayed = currentPosition;
     }
 
     // If there are no cards left, then dismiss the task switcher.
@@ -331,12 +331,12 @@
     var targetNode = evt.target;
     var containerNode = targetNode.parentNode;
     var card;
-    console.log('handleTap with event: ', evt);
+    console.log('handleTap with event: ', evt.type);
     if (targetNode.classList.contains('close-card') &&
         this.cardsList.contains(containerNode)) {
       card = this.getCardForElement(containerNode);
       if (card) {
-        this.manager.cardAction(card.app, 'close');
+        this.manager.doAction(card.app, 'close');
       }
       return;
     }
@@ -344,9 +344,9 @@
     if (('position' in targetNode.dataset) ||
         targetNode.classList.contains('card')) {
       card = this.getCardForElement(targetNode);
-      console.log('handleTap, got card: ', card);
+      console.log('handleTap, got card: ', card.app.origin);
       if (card) {
-        this.manager.cardAction(card.app, 'select');
+        this.manager.doAction(card.app, 'select');
       }
       return;
     }
@@ -363,6 +363,7 @@
     var element = evt.target;
     var eventDetail = evt.detail;
     var cardsView = this.element;
+    var currentPosition = this.manager.currentPosition;
 
     document.releaseCapture();
     cardsView.removeEventListener('touchmove', this);
@@ -391,17 +392,17 @@
         if (this.scrollDirection) {
           if (this.scrollDirection === 'left' &&
                 this.currentDisplayed < this.cardsList.childNodes.length - 1) {
-            this.currentDisplayed = ++this.currentPosition;
+            this.currentDisplayed = ++currentPosition;
 
           } else if (this.scrollDirection === 'right' &&
                      this.currentDisplayed > 0) {
-            this.currentDisplayed = --this.currentPosition;
+            this.currentDisplayed = --currentPosition;
           }
         }
-        this.manager.currentPosition = this.currentPosition;
+        this.manager.currentPosition = currentPosition;
         this.alignCurrentCard();
       } else {
-        console.log('handling event as tap:', evt);
+        console.log('handling event as tap:', evt.type);
         this.handleTap(evt);
       }
       return;
@@ -454,7 +455,7 @@
         break;
 
       case 'tap':
-        console.log('handling event as tap:', evt);
+        console.log('handling event as tap:', evt.type);
         this.handleTap(evt);
         break;
 
