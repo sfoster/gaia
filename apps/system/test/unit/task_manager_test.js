@@ -766,7 +766,7 @@ suite('system/TaskManager >', function() {
       function onOutcome() {
         assert.equal(cardsList.childNodes.length, 0,
                     'all card elements are gone');
-        assert.equal(Object.keys(taskManager.cardsByAppID).length, 0,
+        assert.equal(Object.keys(taskManager.listUI.cardsByAppID).length, 0,
                     'cards lookup is empty');
       }
       waitForEvent(window, 'cardviewclosed').then(onOutcome, onOutcome)
@@ -927,7 +927,7 @@ suite('system/TaskManager >', function() {
       taskManager.closeApp(card.app);
       assert.isTrue(destroySpy.calledOnce);
       assert.equal(cardsList.childNodes.length, 1);
-      assert.isFalse(instanceID in taskManager.cardsByAppID);
+      assert.isFalse(instanceID in taskManager.listUI.cardsByAppID);
     });
   });
 });
