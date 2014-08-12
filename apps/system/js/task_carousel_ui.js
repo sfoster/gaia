@@ -26,20 +26,20 @@
     _initialized: false,
 
     /**
-     * The TaskManager instance that created us
+     * The TaskCarouselUI instance that created us
      * @memberOf TaskCarouselUI.prototype
      */
     manager: null,
 
     /**
      * Index into the stack of the currently displayed app/card
-     * @memberOf TaskManager.prototype
+     * @memberOf TaskCarouselUI.prototype
      */
     currentDisplayed: 0,
 
     /**
      * if 'true' user can close the app by dragging it upwards
-     * @memberOf TaskManager.prototype
+     * @memberOf TaskCarouselUI.prototype
      */
     allowSwipeToClose: true,
 
@@ -525,7 +525,7 @@
    * @memberOf TaskCarouselUI.prototype
    * @param {Number} idx index into the stack
    */
-  TaskManager.prototype.getCardAtIndex = function(idx) {
+  TaskCarouselUI.prototype.getCardAtIndex = function(idx) {
     if (this.stack && idx > -1 && idx < this.stack.length) {
       var app = this.stack[idx];
       var card = app && this.cardsByAppID[app.instanceID];
