@@ -582,25 +582,27 @@
   z-index: 99999;
 }
 
-.appWindow .buttonbar {
+.appWindow .card-view-controls {
   display: none;
-}
-.appWindow.in-task-manager .buttonbar {
-  pointer-events: auto;
-  display: block;
-  opacity: 1;
+  position: absolute;
+  bottom: 3rem;
+  top: auto;
+  height: 6rem;
+  width: 100%;
   padding: 0;
   margin: 0;
-  position: absolute;
-  width: 100%;
-  top: 0;
-  left: 0;
-  height: 6rem;
+  opacity: 1;
+  overflow: visible;
   background-color: rgba(255,255,255,0.4);
   transition: opacity 0.4s;
 }
+.appWindow.in-task-manager .card-view-controls {
+  pointer-events: auto;
+  display: block;
+  opacity: 1;
+}
 
-.appWindow.in-task-manager .buttonbar > button {
+.appWindow.in-task-manager .card-view-controls > button {
   background-size: 4rem auto;
   background-position: center top;
   background-repeat: no-repeat;
@@ -612,12 +614,12 @@
   top: 0;
   z-index: 99999;
 }
-.appWindow.in-task-manager .buttonbar > .close-button {
+.appWindow.in-task-manager .card-view-controls > .close-button {
   background-image: url(./task-manager/close.png);
   background-position: center 1rem;
   left: 0;
 }
-.appWindow.in-task-manager .buttonbar > .favorite-button {
+.appWindow.in-task-manager .card-view-controls > .favorite-button {
   background-image: url(./task-manager/favorite.png);
   background-position: center 1rem;
   right: 0;

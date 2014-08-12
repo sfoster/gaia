@@ -669,7 +669,7 @@
     'authDialog': window.AppAuthenticationDialog,
     'contextmenu': window.BrowserContextMenu,
     'childWindowFactory': window.ChildWindowFactory,
-    'taskCard': window.AppTaskCard
+    'cardView': window.AppCardView
   };
 
   /**
@@ -1862,6 +1862,12 @@
     if (this.element) {
       this.element.classList.add('in-task-manager');
     }
+    // XXX: we'll be including homescreen for 2.1
+    //      so instantiate but just don't show yet
+    if (this.identificationOverlay &&
+        this.cardView && !this.isHomescreen) {
+      this.cardView.show();
+    }
   };
 
   /**
@@ -1872,6 +1878,9 @@
       this.element.classList.remove('in-task-manager');
       this.unapplyStyle(this._dirtyStyleProperties);
       this._dirtyStyleProperties = null;
+    }
+    if (this.cardView) {
+      this.cardView.hide();
     }
   };
 

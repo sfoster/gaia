@@ -108,6 +108,9 @@
     window.addEventListener('attentionscreenhide', this);
     window.addEventListener('taskmanagershow', this);
     window.addEventListener('taskmanagerhide', this);
+    window.addEventListener('apptaskcardclose', this);
+    window.addEventListener('apptaskcardfavorite', this);
+    window.addEventListener('apptaskcardselect', this);
     window.addEventListener('holdhome', this);
     window.addEventListener('home', this);
     window.addEventListener('appopen', this);
@@ -126,6 +129,9 @@
     window.removeEventListener('attentionscreenhide', this);
     window.removeEventListener('taskmanagershow', this);
     window.removeEventListener('taskmanagerhide', this);
+    window.removeEventListener('apptaskcardclose', this);
+    window.removeEventListener('apptaskcardfavorite', this);
+    window.removeEventListener('apptaskcardselect', this);
     window.removeEventListener('holdhome', this);
     window.removeEventListener('home', this);
     window.removeEventListener('appopen', this);
@@ -241,7 +247,7 @@
    * Handle the given action on the given card.
    *
    * @memberOf TaskManager.prototype
-   * @param  {Card} card The card to call the action on.
+   * @param  {AppWindow} app The AppWindow to call the action on.
    * @param  {String} actionName The name of the action to invoke.
    */
   TaskManager.prototype.doAction = function doAction(app, actionName) {
@@ -337,6 +343,18 @@
 
       case 'taskmanagerhide':
         this.hide();
+        break;
+
+      case 'apptaskcardclose':
+        this.doAction(evt.detail, 'close');
+        break;
+
+      case 'apptaskcardfavorite':
+        this.doAction(evt.detail, 'favorite');
+        break;
+
+      case 'apptaskcardselect':
+        this.doAction(evt.detail, 'select');
         break;
 
       case 'holdhome':

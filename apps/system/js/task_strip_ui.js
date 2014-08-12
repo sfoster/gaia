@@ -101,13 +101,11 @@
   };
 
   TaskStripUI.prototype._registerEvents = function() {
-    this.element.addEventListener('click', this);
     window.addEventListener('appterminated', this);
     window.addEventListener('cardviewbeforeshow', this);
   };
 
   TaskStripUI.prototype._unregisterEvents = function(evt) {
-    this.element.removeEventListener('click', this);
     window.removeEventListener('cardviewbeforeshow', this);
     window.removeEventListener('appterminated', this);
     if (this._showing) {
@@ -309,7 +307,6 @@
       case 'scroll' :
         this._scrollInProgress();
         break;
-      case 'click' :
       case 'tap':
         console.log('handle click:', evt);
         this.handleTap(evt);
