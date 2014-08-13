@@ -1,4 +1,4 @@
-/* global ModalDialog, MozActivity,
+  /* global ModalDialog, MozActivity,
    taskManager
 */
 
@@ -17,6 +17,9 @@
    * @extends BaseUI
    */
   var AppCardView = function AppCardView(app) {
+    if (!app || !app.element) {
+      return;
+    }
     this.app = app;
     this.instanceID = _id++;
     this.containerElement = app.element;
@@ -50,16 +53,27 @@
   };
 
   AppCardView.prototype.handleEvent = function acv_handleEvent(evt) {
-    switch (evt.type) {
-      case 'click':
-        if (this.closeButton === evt.target) {
+    if (evt.type === 'click') {
+      if (!this.app) {
+        return;
+      }
+      this.debug('handling click event on target: ', evt.target);
+      switch (evt.target) {
+        case this.closeButton:
           evt.stopPropagation();
-          this.publish('close');
-        } else if (this.favoriteButton === evt.target) {
+          this.publish('close', this.app);
+          break;
+        case this.favoriteButton:
           evt.stopPropagation();
-          this.publish('favorite');
-        }
-        break;
+          this.publish('favorite', this.app);
+          break;
+        case this.app.identificationIcon:
+        case this.app.browser:
+        case identificationTitle:
+          evt.stopPropagation();
+          this.publish('select', this.app);
+          break;
+      }
     }
   };
 
@@ -108,17 +122,8 @@
   };
 
   AppCardView.prototype.hide = function acv_enter(evt) {
+    this.debug('hide');
     this._unregisterEvents();
-  };
-
-  AppCardView.prototype.onCloseButton = function acv_onFavoriteButton(evt) {
-    evt && evt.stopPropagation();
-    // TODO: make it so
-  };
-
-  AppCardView.prototype.onFavoriteButton = function acv_onFavoriteButton(evt) {
-    evt && evt.stopPropagation();
-    // TODO: make it so
   };
 
   AppCardView.prototype.debug = function aw_debug(msg) {

@@ -108,9 +108,9 @@
     window.addEventListener('attentionscreenhide', this);
     window.addEventListener('taskmanagershow', this);
     window.addEventListener('taskmanagerhide', this);
-    window.addEventListener('apptaskcardclose', this);
-    window.addEventListener('apptaskcardfavorite', this);
-    window.addEventListener('apptaskcardselect', this);
+    window.addEventListener('appcardclose', this);
+    window.addEventListener('appcardfavorite', this);
+    window.addEventListener('appcardselect', this);
     window.addEventListener('holdhome', this);
     window.addEventListener('home', this);
     window.addEventListener('appopen', this);
@@ -129,9 +129,9 @@
     window.removeEventListener('attentionscreenhide', this);
     window.removeEventListener('taskmanagershow', this);
     window.removeEventListener('taskmanagerhide', this);
-    window.removeEventListener('apptaskcardclose', this);
-    window.removeEventListener('apptaskcardfavorite', this);
-    window.removeEventListener('apptaskcardselect', this);
+    window.removeEventListener('appcardclose', this);
+    window.removeEventListener('appcardfavorite', this);
+    window.removeEventListener('appcardselect', this);
     window.removeEventListener('holdhome', this);
     window.removeEventListener('home', this);
     window.removeEventListener('appopen', this);
@@ -188,6 +188,8 @@
 
     // Apps info from Stack Manager.
     var stack = this.stack = StackManager.snapshot();
+    var homescreen = homescreenLauncher.getHomescreen();
+
     if (this.isTaskStrip) {
       stack.reverse();
     }
@@ -224,7 +226,13 @@
     // while the task manager is shown, the active app is the homescreen
     // so selecting an app switches from homescreen to that app
     // which gets us in the right state
-    AppWindowManager.display(null, null, 'to-cardview');
+    if (this.isTaskStrip) {
+      homescreen.setVisible(false);
+    }
+    AppWindowManager.display(homescreen,
+                             null,
+                             this.isTaskStrip ? null: 'to-cardview');
+
 
     // We're committed to showing the card switcher.
     // Homescreen fades (shows its fade-overlay) on cardviewbeforeshow events
@@ -251,6 +259,7 @@
    * @param  {String} actionName The name of the action to invoke.
    */
   TaskManager.prototype.doAction = function doAction(app, actionName) {
+    console.log('doAction on ', app);
     switch (actionName) {
       case 'close' :
           this.closeApp(app);
@@ -319,6 +328,9 @@
           this.stack[this.currentPosition].origin,
           'from-cardview',
           null);
+        if (app.isHomescreen) {
+          app.setVisible(true);
+        }
         break;
 
       case 'home':
@@ -345,15 +357,15 @@
         this.hide();
         break;
 
-      case 'apptaskcardclose':
+      case 'appcardclose':
         this.doAction(evt.detail, 'close');
         break;
 
-      case 'apptaskcardfavorite':
+      case 'appcardfavorite':
         this.doAction(evt.detail, 'favorite');
         break;
 
-      case 'apptaskcardselect':
+      case 'appcardselect':
         this.doAction(evt.detail, 'select');
         break;
 
