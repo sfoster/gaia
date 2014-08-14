@@ -227,13 +227,11 @@
     // so selecting an app switches from homescreen to that app
     // which gets us in the right state
     if (this.isTaskStrip) {
-      homescreen.setVisible(false);
+    } else {
+      AppWindowManager.display(homescreen,
+                               null,
+                               this.isTaskStrip ? null: 'to-cardview');
     }
-    AppWindowManager.display(homescreen,
-                             null,
-                             this.isTaskStrip ? null: 'to-cardview');
-
-
     // We're committed to showing the card switcher.
     // Homescreen fades (shows its fade-overlay) on cardviewbeforeshow events
     this.fireCardViewBeforeShow();
@@ -328,9 +326,6 @@
           this.stack[this.currentPosition].origin,
           'from-cardview',
           null);
-        if (app.isHomescreen) {
-          app.setVisible(true);
-        }
         break;
 
       case 'home':
