@@ -70,6 +70,17 @@
       return this._apps;
     },
 
+    /**
+     * Close an app without changing the value of activeApp
+     * @param  {AppWindow} app The app to close
+     * @param  {String} animatio The name of the animation to run when closing
+     */
+    fauxCloseApp: function(app, animation) {
+      console.log('fauxCloseApp: ', app.name, 'activeApp: ', this._activeApp && this._activeApp.name);
+      app.close(animation || 'immediate-close');
+      console.log('/fauxCloseApp: activeApp: ', this._activeApp && this._activeApp.name);
+    },
+
     // reference to active appWindow instance.
     _activeApp: null,
 
@@ -197,8 +208,6 @@
         appNext.open(immediateTranstion ? 'immediate' :
                       ((switching === true) ? 'invoked' : openAnimation));
         if (appCurrent) {
-          appCurrent.close(immediateTranstion ? 'immediate' :
-            ((switching === true) ? 'invoking' : closeAnimation));
         } else {
           this.debug('No current running app!');
         }
@@ -722,6 +731,7 @@
     },
 
     _updateActiveApp: function awm__changeActiveApp(instanceID) {
+      console.log('_updateActiveApp with instanceID:', instanceID);
       this._activeApp = this._apps[instanceID];
       if (!this._activeApp) {
         this.debug('no active app alive: ' + instanceID);

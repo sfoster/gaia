@@ -173,6 +173,7 @@
     // Make the cardsView overlay inactive
     this.listUI.hide(removeImmediately);
     this._showing = false;
+    homescreenLauncher.getHomescreen().transitionController.changeTransitionState('open');
     this.fireCardViewClosed(newStackPosition);
   };
 
@@ -193,7 +194,12 @@
     if (this.isTaskStrip) {
       stack.reverse();
     }
+
     var currentPosition = StackManager.position;
+
+    // XXX - sfoster: this logic will change slightly for haida task switcher
+    //       as we add the homescreen to the stack, but still display/center
+    //       the most recent app
 
     // If we are currently displaying the homescreen but we have apps in the
     // stack we will display the most recently used application.
@@ -205,13 +211,17 @@
     var currentApp = (stack.length && currentPosition > -1 &&
                      stack[currentPosition]);
 
-    // Return early if isTaskStrip and there are no apps.
-    if (!currentApp && this.isTaskStrip) {
-      // Fire a cardchange event to notify rocketbar that there are no cards
-      this.fireCardViewClosed();
-      return;
-    } else {
-      // We can listen to appclose event
+    if (this.isTaskStrip) {
+      // Return early if isTaskStrip and there are no apps.
+      if (!currentApp) {
+        // Fire a cardchange event to notify that there are no cards
+        this.fireCardViewClosed();
+        return;
+      }
+      // "close" active app without changing the '_activeApp' AWM state
+      currentApp.transitionController.changeTransitionState('close');
+      // "close" homescreen
+      homescreen.transitionController.changeTransitionState('close');
     }
 
     if (!this.listUI) {
@@ -230,7 +240,7 @@
     } else {
       AppWindowManager.display(homescreen,
                                null,
-                               this.isTaskStrip ? null: 'to-cardview');
+                               'to-cardview');
     }
     // We're committed to showing the card switcher.
     // Homescreen fades (shows its fade-overlay) on cardviewbeforeshow events
@@ -269,6 +279,7 @@
         console.log('cardAction: select, calling AppWindowManager.display ' +
             ', set newStackPosition: ', this.stack.indexOf(app));
         this.newStackPosition = this.stack.indexOf(app);
+
         AppWindowManager.display(
           app,
           'from-cardview',
