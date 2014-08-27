@@ -1,6 +1,8 @@
 /* global MockStackManager, MockNavigatorSettings, MockAppWindowManager,
           TaskManager, Card, TaskCard, AppWindow,
-          MockScreenLayout, MocksHelper */
+          MockScreenLayout, MocksHelper,
+          TaskCarouselUI, TaskStripUI
+*/
 'use strict';
 require('/shared/test/unit/mocks/mock_gesture_detector.js');
 require('/shared/test/unit/mocks/mock_navigator_moz_settings.js');
@@ -16,7 +18,6 @@ requireApp('system/test/unit/mock_rocketbar.js');
 requireApp('system/test/unit/mock_sleep_menu.js');
 requireApp('system/test/unit/mock_stack_manager.js');
 requireApp('system/test/unit/mock_app_window.js');
-
 
 var mocksForTaskManager = new MocksHelper([
   'GestureDetector',
@@ -43,6 +44,7 @@ function waitForEvent(target, name, timeout) {
     target.addEventListener(name, function onEvent(evt){
       clearTimeout(timer);
       target.removeEventListener(name, onEvent);
+      console.log('waitForEvent, resolving with event: ', evt.type);
       resolve(evt);
     });
   });
@@ -56,8 +58,8 @@ function failOnReject(err) {
 suite('system/TaskManager >', function() {
   var fakeInnerHeight = 200;
 
-  var screenNode, realMozLockOrientation, realScreenLayout, realMozSettings,
-      realSettingsListener;
+  var screenNode, windowsNode, realMozLockOrientation, realScreenLayout,
+      realMozSettings, realSettingsListener;
   var cardsView, cardsList;
   var originalLockScreen;
   var ihDescriptor;
@@ -295,6 +297,9 @@ suite('system/TaskManager >', function() {
 
     screenNode = document.createElement('div');
     screenNode.id = 'screen';
+    windowsNode = document.createElement('div');
+    windowsNode.id = 'windows';
+
     cardsView = document.createElement('div');
     cardsView.id = 'cards-view';
 
@@ -303,7 +308,9 @@ suite('system/TaskManager >', function() {
     cardsView.appendChild(cardsList);
 
     screenNode.appendChild(cardsView);
+    screenNode.appendChild(windowsNode);
     document.body.appendChild(screenNode);
+
     realScreenLayout = window.ScreenLayout;
     window.ScreenLayout = MockScreenLayout;
     realMozLockOrientation = screen.mozLockOrientation;
@@ -333,8 +340,11 @@ suite('system/TaskManager >', function() {
       }
     };
 
+
     requireApp('system/js/cards_helper.js');
     requireApp('system/js/base_ui.js');
+    requireApp('system/js/task_carousel_ui.js');
+    requireApp('system/js/task_strip_ui.js');
     requireApp('system/js/card.js');
     requireApp('system/js/task_card.js');
 
@@ -398,22 +408,19 @@ suite('system/TaskManager >', function() {
                     'isTaskStrip is false when setting goes false');
     });
 
-    test('creates Card instances when isTaskStrip is false', function(){
+    test('creates TaskCarouselUI instance when isTaskStrip is false',
+    function(){
       taskManager.isTaskStrip = false;
-      var app = apps['http://sms.gaiamobile.org'];
-      taskManager.addCard(0, app);
-      var card = taskManager.cardsByAppID[app.instanceID];
-      assert.ok(card && card instanceof Card,
-                'creates Card instances when isTaskStrip is false');
+      var listUI = taskManager._createListUI();
+      assert.ok(listUI && listUI instanceof TaskCarouselUI,
+                'creates TaskCarouselUI instance when isTaskStrip is false');
     });
 
-    test('creates TaskCard instances when isTaskStrip is true', function(){
+    test('creates TaskStripUI instance when isTaskStrip is true', function(){
       taskManager.isTaskStrip = true;
-      var app = apps['http://sms.gaiamobile.org'];
-      taskManager.addCard(0, app);
-      var card = taskManager.cardsByAppID[app.instanceID];
-      assert.ok(card && card instanceof TaskCard,
-                'creates TaskCard instances when isTaskStrip is true');
+      var listUI = taskManager._createListUI();
+      assert.ok(listUI && listUI instanceof TaskStripUI,
+                'creates TaskStripUI instance when isTaskStrip is false');
     });
 
     suite('screenshots settings >', function() {
@@ -448,6 +455,7 @@ suite('system/TaskManager >', function() {
   suite('populated task manager >', function() {
     suiteTeardown(function() {
       taskManager.hide(true);
+
       cardsList.innerHTML = '';
     });
 
@@ -467,7 +475,7 @@ suite('system/TaskManager >', function() {
         taskManager.hide(true);
         waitForEvent(window, 'cardviewshown')
           .then(function() { done(); }, failOnReject);
-        taskManager.isTaskStrip = false;
+        taskManager.onTaskStripEnabled(false);
         taskManager.show();
       });
 
@@ -476,9 +484,9 @@ suite('system/TaskManager >', function() {
       });
 
       test('fetch elements', function() {
-        assert.equal(taskManager.element, cardsView);
-        assert.equal(taskManager.cardsList, cardsList);
-        assert.equal(taskManager.screenElement, screenNode);
+        assert.equal(taskManager.listUI.element, cardsView);
+        assert.equal(taskManager.listUI.cardsList, cardsList);
+        assert.equal(taskManager.listUI.screenElement, screenNode);
       });
 
       test('cardsview should be active', function() {
@@ -493,19 +501,19 @@ suite('system/TaskManager >', function() {
       test('initial state', function() {
         assert.equal(taskManager.currentPosition, 0,
                     'initial position should be 0');
-        assert.equal(taskManager.currentDisplayed, 0, 0,
+        assert.equal(taskManager.listUI.currentDisplayed, 0, 0,
                     'currentDisplayed should be 0');
-        assert.ok(taskManager.currentCard,
+        assert.ok(taskManager.listUI.currentCard,
                   'has a truthy currentCard property');
-        assert.ok(taskManager.nextCard,
+        assert.ok(taskManager.listUI.nextCard,
                   'has a truthy nextCard property');
-        assert.ok(!taskManager.prevCard,
+        assert.ok(!taskManager.listUI.prevCard,
                   'has no prevCard at initial position');
       });
 
       test('transitions are removed correctly after swiping', function() {
-        var card = taskManager.getCardAtIndex(0);
-        var applyStyleStub = sinon.spy(card, 'applyStyle');
+        var card = taskManager.listUI.getCardAtIndex(0);
+        var applyStyleStub = this.sinon.spy(card, 'applyStyle');
 
         var undefinedProps =
           function(value) {
@@ -541,7 +549,7 @@ suite('system/TaskManager >', function() {
       });
 
       test('user can change swipe direction', function() {
-        var currentCard = taskManager.currentCard;
+        var currentCard = taskManager.listUI.currentCard;
 
         // Simulate a swipe that goes to one side, then back again
         var el = currentCard.element;
@@ -550,7 +558,7 @@ suite('system/TaskManager >', function() {
         el.dispatchEvent(createTouchEvent('touchmove', el, 50, 500));
         el.dispatchEvent(createTouchEvent('touchend', el, 100, 500));
 
-        assert.isTrue(currentCard == taskManager.currentCard,
+        assert.isTrue(currentCard == taskManager.listUI.currentCard,
                       'current card remains unchanged');
       });
 
@@ -596,10 +604,9 @@ suite('system/TaskManager >', function() {
       });
     });
 
-    suite('populated task manager in rocketbar >', function() {
+    suite('populated task manager using task strip >', function() {
       setup(function(done) {
-        taskManager.isTaskStrip = true;
-        assert.isFalse(taskManager.isShown(), 'taskManager isnt showing yet');
+        taskManager.onTaskStripEnabled(true);
         waitForEvent(window, 'cardviewshown')
           .then(function() { done(); }, failOnReject);
         taskManager.show();
@@ -610,7 +617,7 @@ suite('system/TaskManager >', function() {
       });
 
       test('has correct classes', function() {
-        assert.isTrue(cardsView.classList.contains('active'));
+        console.log('has correct classes: ', screenNode.className);
         assert.isTrue(screenNode.classList.contains('task-manager'));
       });
 
@@ -630,6 +637,14 @@ suite('system/TaskManager >', function() {
 
     test('when isTaskStrip is true, empty task manager closes', function(done) {
       var events = [];
+      function onOutcome() {
+        assert.equal(events.length, 1, 'sanity check, only one event received');
+        assert.equal(events[0],
+                    'cardviewclosed',
+                    'cardviewclosed event raised when shown with empty stack');
+        assert.isFalse(cardsView.classList.contains('active'));
+        assert.isFalse(taskManager.isShown());
+      }
       window.Promise.race([
         waitForEvent(window, 'cardviewclosed').then(function() {
           events.push('cardviewclosed');
@@ -637,17 +652,11 @@ suite('system/TaskManager >', function() {
         waitForEvent(window, 'cardviewshown').then(function() {
           events.push('cardviewshown');
         }, failOnReject)
-      ]).then(function() {
-        assert.equal(events.length, 1, 'sanity check, only one event received');
-        assert.equal(events[0],
-                    'cardviewclosed',
-                    'cardviewclosed event raised when shown with empty stack');
-        assert.isFalse(cardsView.classList.contains('active'));
-        assert.isFalse(taskManager.isShown());
-        done();
-      }, failOnReject);
+      ]).then(onOutcome, onOutcome)
+        .then(done, done);
+
       // Haida/rocketbar mode: taskManager aborts show when empty
-      taskManager.isTaskStrip = true;
+      taskManager.onTaskStripEnabled(true);
       taskManager.show();
     });
 
@@ -670,7 +679,7 @@ suite('system/TaskManager >', function() {
         done();
       }, failOnReject);
       // Pre-Haida/Cardsview mode: taskManager shows empty message
-      taskManager.isTaskStrip = false;
+      taskManager.onTaskStripEnabled(false);
       taskManager.show();
     });
 
@@ -720,7 +729,7 @@ suite('system/TaskManager >', function() {
       assert.isFalse(taskManager.isShown(), 'taskManager isnt showing yet');
       waitForEvent(window, 'cardviewshown')
         .then(function() { done(); }, failOnReject);
-      taskManager.isTaskStrip = false;
+      taskManager.onTaskStripEnabled(false);
       taskManager.show();
     });
 
@@ -754,60 +763,34 @@ suite('system/TaskManager >', function() {
     });
 
     test('hide: removes cards', function(done) {
-      waitForEvent(window, 'cardviewclosed').then(function(event) {
+      function onOutcome() {
         assert.equal(cardsList.childNodes.length, 0,
                     'all card elements are gone');
-        assert.equal(Object.keys(taskManager.cardsByAppID).length, 0,
+        assert.equal(Object.keys(taskManager.listUI.cardsByAppID).length, 0,
                     'cards lookup is empty');
-        done();
-      }, failOnReject);
+      }
+      waitForEvent(window, 'cardviewclosed').then(onOutcome, onOutcome)
+                                            .then(done, done);
       taskManager.hide(true);
     });
 
     test('hide: calls card.destroy', function(done) {
-      var firstCard = taskManager.getCardAtIndex(0);
-      var secondCard = taskManager.getCardAtIndex(1);
-      var destroyStub1 = sinon.stub(firstCard, 'destroy');
-      var destroyStub2 = sinon.stub(secondCard, 'destroy');
+      var firstCard = taskManager.listUI.getCardAtIndex(0);
+      var secondCard = taskManager.listUI.getCardAtIndex(1);
+      var destroyStub1 = this.sinon.stub(firstCard, 'destroy');
+      var destroyStub2 = this.sinon.stub(secondCard, 'destroy');
 
-      waitForEvent(window, 'cardviewclosed').then(function(event) {
+      function onOutcome() {
         assert.isTrue(destroyStub1.calledOnce,
                       '1st card.destroy was called once');
         assert.isTrue(destroyStub2.calledOnce,
                       '2nd card.destroy was called once');
-        destroyStub1.restore();
-        destroyStub2.restore();
-        done();
-      }, failOnReject);
+      }
+      waitForEvent(window, 'cardviewclosed').then(onOutcome, onOutcome)
+                                            .then(done, done);
       taskManager.hide(true);
     });
 
-  });
-
-  suite('setActive', function() {
-    test('setActive true', function(done) {
-      assert.isFalse(taskManager.isShown(), 'taskManager isnt showing yet');
-      // setActive(true) should fire cardsviewshown event
-      waitForEvent(window, 'cardviewshown').then(function(event) {
-        assert.isTrue(cardsView.classList.contains('active'));
-        assert.isTrue(taskManager.isShown(), 'isShown is true');
-        done();
-      }, failOnReject);
-      // minimal-setup
-      cardsView.classList.remove('active');
-      taskManager.setActive(true);
-    });
-    test('setActive false', function(done) {
-      // setActive(false) should fire cardsviewbeforeclose event
-      waitForEvent(window, 'cardviewbeforeclose').then(function(event) {
-        assert.isFalse(cardsView.classList.contains('active'));
-        assert.isFalse(taskManager.isShown(), 'isShown is false');
-        done();
-      }, failOnReject);
-      // minimal-setup
-      cardsView.classList.add('active');
-      taskManager.setActive(false);
-    });
   });
 
   suite('one app is displayed >', function() {
@@ -820,7 +803,7 @@ suite('system/TaskManager >', function() {
       assert.isFalse(taskManager.isShown(), 'taskManager isnt showing yet');
       waitForEvent(window, 'cardviewshown')
         .then(function() { done(); }, failOnReject);
-      taskManager.isTaskStrip = false;
+      taskManager.onTaskStripEnabled(false);
       taskManager.show();
     });
 
@@ -842,7 +825,6 @@ suite('system/TaskManager >', function() {
   });
 
   suite('tapping on an app >', function() {
-    var displayStub;
 
     setup(function(done) {
       MockStackManager.mStack = [apps['http://sms.gaiamobile.org']];
@@ -854,38 +836,47 @@ suite('system/TaskManager >', function() {
       assert.isFalse(taskManager.isShown(), 'taskManager isnt showing yet');
       waitForEvent(window, 'cardviewshown')
         .then(function() { done(); }, failOnReject);
-      taskManager.isTaskStrip = true;
+      taskManager.onTaskStripEnabled(false);
       taskManager.show();
     });
 
     teardown(function() {
       taskManager.hide(true);
-      displayStub.restore();
     });
 
     test('displays the new app before dismissing the task manager',
     function(done) {
-      var target = cardsList.firstElementChild;
-      var fakeEvent = {
-        type: 'tap',
-        target: target
-      };
-
-     waitForEvent(window, 'cardviewclosed').then(function(evt) {
-        assert.ok(evt.detail && !isNaN(evt.detail.newStackPosition),
+      function onOutcome(evt) {
+        console.log('onOutcome: cardviewclosed event: ', evt, evt.type);
+        assert.ok(evt.detail);
+        assert.ok(!isNaN(evt.detail.newStackPosition),
                   'cardviewclosed evt has new position detail');
-        done();
-      }, failOnReject);
+      }
+
+
+      waitForEvent(window, 'cardviewclosed').then(function(evt) {
+        console.log('waitForEvent callback for cardviewclosed: ', evt.type);
+        return onOutcome(evt);
+      }, function(evt) {
+        console.log('waitForEvent errback for cardviewclosed: ', evt.type);
+        return onOutcome(evt);
+      }).then(done, done);
 
       // stub the display method to fire the 'appopen' event normally
       // triggered by the transition controller
-      displayStub = sinon.stub(MockAppWindowManager, 'display', function() {
+      this.sinon.stub(MockAppWindowManager, 'display', function() {
+        console.log('AppWindowManager display called');
         setTimeout(function() {
-          displayStub.restore();
+          console.log('sending appopen event');
           sendAppopen(MockStackManager.mStack[0]);
         });
       });
-      taskManager.handleEvent(fakeEvent);
+
+      console.log('displays the new app before dismissing the task manager');
+      taskManager.listUI.handleEvent({
+        type: 'tap',
+        target: cardsList.firstElementChild
+      });
     });
   });
   suite('closeApp', function() {
@@ -903,7 +894,7 @@ suite('system/TaskManager >', function() {
       assert.isFalse(taskManager.isShown(), 'taskManager isnt showing yet');
       waitForEvent(window, 'cardviewshown')
         .then(function() { done(); }, failOnReject);
-      taskManager.isTaskStrip = false;
+      taskManager.onTaskStripEnabled(false);
       taskManager.show();
     });
     teardown(function() {
@@ -912,23 +903,31 @@ suite('system/TaskManager >', function() {
     });
 
     test('removes the card for that app', function() {
-      var card = taskManager.getCardAtIndex(0);
-      var removeCardStub = this.sinon.stub(taskManager, 'removeCard');
-
-      taskManager.closeApp(card);
+      var card = taskManager.listUI.getCardAtIndex(0);
+      this.sinon.stub(card.app, 'kill', function(){
+        var evt = new CustomEvent('appterminated', { detail: this });
+        window.dispatchEvent(evt);
+      });
+      var removeCardStub = this.sinon.stub(taskManager.listUI, 'removeCard');
+      taskManager.closeApp(card.app);
       assert.isTrue(removeCardStub.calledOnce);
     });
 
     test('destroys the card', function() {
-      var card = taskManager.getCardAtIndex(0);
+      var card = taskManager.listUI.getCardAtIndex(0);
+      this.sinon.stub(card.app, 'kill', function(){
+        var evt = new CustomEvent('appterminated', { detail: this });
+        window.dispatchEvent(evt);
+      });
+
       assert.isTrue(card && card.element &&
-                    card.element.parentNode == taskManager.cardsList);
+                    card.element.parentNode == taskManager.listUI.cardsList);
       var destroySpy = this.sinon.spy(card, 'destroy');
       var instanceID = card.app.instanceID;
-      taskManager.closeApp(card);
+      taskManager.closeApp(card.app);
       assert.isTrue(destroySpy.calledOnce);
       assert.equal(cardsList.childNodes.length, 1);
-      assert.isFalse(instanceID in taskManager.cardsByAppID);
+      assert.isFalse(instanceID in taskManager.listUI.cardsByAppID);
     });
   });
   suite('app is killed', function() {

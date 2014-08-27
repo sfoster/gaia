@@ -240,7 +240,7 @@ body {
   overflow: hidden;
 }
 
-#windows::before {
+#windows::not(.task-manager)::before {
   position: absolute;
   top: 0;
   width: 100%;
