@@ -812,13 +812,14 @@ aside.connecting {
 #welcome_browser #form_share_statistics label {
   width: 100%;
   height: auto;
-  margin: 0 3rem 0 0;
+  margin: 0 3rem 0 -1rem;
   padding-right: 3rem;
+  padding-top: 1rem;
 }
 
 #form_share_statistics span:after {
-  top: 1rem;
-  left: 1rem;
+  top: 2rem;
+  left: 2rem;
 }
 
 #welcome_browser #form_share_statistics p {
