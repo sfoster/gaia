@@ -1,5 +1,5 @@
 'use strict';
-/* global module */
+/* global module, __dirname */
 
 var Marionette = require('marionette-client');
 
@@ -24,12 +24,34 @@ Ftu.clientOptions = {
 Ftu.URL = 'app://ftu.gaiamobile.org';
 
 Ftu.Selectors = {
+  'activationScreen': '#activation-screen',
   'languagePanel': '#languages',
-  'wifiPanel': '#wifi'
+  'wifiPanel': '#wifi',
+  'targetRegion': '[role="region"]:target',
+  'forwardButton': '#forward'
 };
 
-Ftu.prototype = {
+Ftu.MocksPaths = {
+  'navigator.mozIccManager':
+    __dirname + '/../mocks/mock_navigator_moz_icc_manager.js',
+};
 
+console.log('Ftu.MocksPaths: ', JSON.stringify(Ftu.MocksPaths, null, 2));
+
+Ftu.prototype = {
+  get forwardButton() {
+    return this.client.findElement(Ftu.Selectors.forwardButton);
+  },
+  get currentPanel() {
+    return this.client.findElement(Ftu.Selectors.targetRegion);
+  },
+  launch: function() {
+    var client = this.client;
+
+    client.apps.launch(Ftu.URL);
+    client.apps.switchToApp(Ftu.URL);
+    client.helper.waitForElement(Ftu.Selectors.activationScreen);
+  },
   getPanel: function(panel) {
     return this.client.helper.waitForElement(
       Ftu.Selectors[panel + 'Panel']);
@@ -49,6 +71,14 @@ Ftu.prototype = {
       var button = this.client.helper.waitForElement(button_id);
       button.click();
     }
+  },
+
+  tapNext: function() {
+    var currentPanel = this.currentPanel;
+    this.forwardButton.click();
+    this.client.waitFor(function() {
+      return this.currentPanel !== currentPanel;
+    }.bind(this));
   }
 };
 
