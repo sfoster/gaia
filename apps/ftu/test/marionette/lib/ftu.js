@@ -14,7 +14,8 @@ Ftu.clientOptions = {
     'dom.w3c_touch_events.enabled': 1
   },
   settings: {
-    'lockscreen.enabled': false
+    'lockscreen.enabled': false,
+    'time.timezone': undefined
   }
 };
 
@@ -31,9 +32,11 @@ Ftu.Selectors = {
   'forwardButton': '#forward'
 };
 
+var _mocksDir = __dirname + '/../mocks';
 Ftu.MocksPaths = {
-  'navigator.mozIccManager':
-    __dirname + '/../mocks/mock_navigator_moz_icc_manager.js',
+  'navigator.mozIccManager':  _mocksDir +'/mock_navigator_moz_icc_manager.js',
+  'navigator.onLine':   _mocksDir +'/mock_navigator_online.js',
+  'mozIcc': _mocksDir + '/mock_moz_icc.js',
 };
 
 console.log('Ftu.MocksPaths: ', JSON.stringify(Ftu.MocksPaths, null, 2));
@@ -44,6 +47,16 @@ Ftu.prototype = {
   },
   get currentPanel() {
     return this.client.findElement(Ftu.Selectors.targetRegion);
+  },
+  updateMozSettings: function(settingNameValues) {
+    this.client.executeAsyncScript(function(nameValues) {
+      var mozSettings = document.defaultView.wrappedJSObject
+          .navigator.mozSettings;
+      var req = mozSettings.createLock().set(nameValues);
+      req.onsuccess = req.onerror = function() {
+        marionetteScriptFinished();
+      };
+    },[settingNameValues]);
   },
   launch: function() {
     var client = this.client;
@@ -73,12 +86,14 @@ Ftu.prototype = {
     }
   },
 
-  tapNext: function() {
-    var currentPanel = this.currentPanel;
-    this.forwardButton.click();
-    this.client.waitFor(function() {
-      return this.currentPanel !== currentPanel;
+  tapNext: function(readyCondition) {
+    var currentId = this.currentPanel && this.currentPanel.getAttribute('id');
+    this.actions.tap(this.forwardButton).perform();
+    this.client.waitFor(readyCondition || function() {
+      return this.currentPanel &&
+             this.currentPanel.getAttribute('id') !== currentId;
     }.bind(this));
+    this.client.helper.waitForElementToDisappear('#loading-overlay');
   }
 };
 
