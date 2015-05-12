@@ -974,7 +974,8 @@
 
       else {
         // Otherwise, we look for a favicon.ico file in the origin.
-        iconURL = this.getOriginFromURL(this.app.origin) + '/favicon.ico';
+        var o = this.getOriginFromURL(this.app.origin);
+        iconURL = `${o}/favicon.ico#-moz-resolution=${ICON_SIZE},${ICON_SIZE}`;
 
         // Does it even exist?
         var img = document.createElement('img');
