@@ -1008,6 +1008,7 @@
     function aw__handle_mozbrowserloadstart(evt) {
       this.loading = true;
       this.inError = false;
+      this.linkedData = null;
       this._changeState('loading', true);
       this.publish('loading');
     };
@@ -1063,6 +1064,8 @@
         this.debug('setting background color..');
         this.browser.element.style.backgroundColor = backgroundColor;
       }
+
+      this.publishLinkedDataEvent();
     };
 
   AppWindow.prototype._handle_mozbrowserlocationchange =
@@ -1114,6 +1117,11 @@
     function aw__handle_mozbrowsermetachange(evt) {
 
       var detail = evt.detail;
+
+      if (detail.name.startsWith('og:')) {
+        this.handleLinkedDataEvent(detail);
+        return;
+      }
 
       switch (detail.name) {
         case 'theme-color':
@@ -1185,6 +1193,26 @@
       this['_handle_' + evt.type](evt);
     }
   };
+
+  AppWindow.prototype.handleLinkedDataEvent =
+    function aw_handleLinkedDataEvent(evt) {
+      this.linkedData = this.linkedData || {};
+
+      var linkeddataType = evt.name.replace(/^og:/, '');
+      var linkeddataValue = evt.content;
+      this.linkedData[linkeddataType] = linkeddataValue;
+
+      if (!this.loading) {
+        this.publishLinkedDataEvent();
+      }
+    };
+
+  AppWindow.prototype.publishLinkedDataEvent =
+    function aw_publishLinkedDataEvent() {
+      if (this.linkedData) {
+        this.publish('linkeddatachange');
+      }
+    };
 
   /**
    * A temp variable to store current screenshot blob.
