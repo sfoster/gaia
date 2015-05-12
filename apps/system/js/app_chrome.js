@@ -11,7 +11,7 @@
 'use strict';
 
 (function(exports) {
-  const DEFAULT_ICON_URL = '/style/icons/Default.png';
+  const DEFAULT_ICON_URL = '/style/chrome/images/default_icon.png';
 
   var _id = 0;
 

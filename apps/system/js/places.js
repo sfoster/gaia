@@ -406,6 +406,23 @@
         delete this._placeChanges[url];
         cb(place);
       });
+    },
+    
+    /**
+     * Pin/un-pin a page.
+     * 
+     * @param {String} url The URL of the page to pin.
+     * @param {Boolean} value True for pin, false for un-pin.
+     * @returns {Promise} Promise of a response.
+     */
+    setPinned: function(url, value, linkedData) {
+      return this.editPlace(url, (place, callback) => {
+        place.pinnedPage = value;
+        if (linkedData) {
+          place.linkedData = linkedData;
+        }
+        callback(place);
+      });
     }
   };
 

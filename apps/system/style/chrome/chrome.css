@@ -114,9 +114,9 @@
 /* URL bar */
 .chrome .controls .urlbar {
   width: calc(100% - 4.5rem);
-  height: 3.4rem;
-  line-height: 3.4rem;
-  margin: 0 0 0.5rem;
+  height: 3.2rem;
+  line-height: 3.2rem;
+  margin: 0.2rem 0 0.5rem;
   border-radius: 1.8rem;
   color: inherit;
   overflow: visible;
@@ -261,10 +261,10 @@
 
 /* SSL Lock Icons in rocketbar */
 .chrome-combined.maximized .chrome-has-ssl-indicator .chrome-ssl-indicator {
-  -moz-padding-start: 3rem;
+  -moz-padding-start: 5.5rem;
 
   background-repeat: no-repeat;
-  background-position: 0.1rem center;
+  background-position: 3rem center; 
   background-size: 3rem;
 }
 
@@ -306,9 +306,8 @@
 .site-icon {
   width: 3.2rem;
   height: 3.2rem;
-  margin-top: .1rem;
   background: no-repeat center / 3.2rem content-box;
-  background-image: url('/style/icons/Default.png');
+  background-image: url('images/default_icon.png');
   position: absolute;
 }
 
@@ -353,7 +352,7 @@
   background-position: center center;
   background-repeat: no-repeat;
   position: absolute;
-  bottom: 0.3rem;
+  bottom: 0.1rem;
   right: 0;
   padding: 0 0.3rem;
   width: 3rem;
