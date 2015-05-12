@@ -117,7 +117,7 @@
   height: 3.4rem;
   line-height: 3.4rem;
   margin: 0 0 0.5rem;
-  border-radius: 1.8rem;
+  border-radius: 0 1.8rem 1.8rem 0;
   color: inherit;
   overflow: hidden;
   background-color: transparent;
@@ -146,7 +146,7 @@
 }
 
 .chrome-combined .chrome-title-container {
-  width: calc(100% - 3.2rem);
+  width: calc(100% - 3.2rem - 3.2rem);
   padding-top: 0;
   padding-bottom: 0;
   -moz-padding-start: 1.45rem;
@@ -301,6 +301,13 @@
 
 .maximized .chrome-has-ssl-indicator[data-ssl="broken"] .chrome-ssl-indicator {
   background-image: url("images/light/ssl_broken.png");
+}
+
+.site-icon {
+  width: 3.2rem;
+  height: 3.2rem;
+  background: no-repeat center / 3rem content-box;
+  float: left;
 }
 
 /* Handle urlbar sizing when back or forward buttons are disabled */

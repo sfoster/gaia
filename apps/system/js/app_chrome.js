@@ -6,10 +6,13 @@
 /* global MozActivity */
 /* global SettingsListener */
 /* global Service */
+/* global WebManifestHelper */
 
 'use strict';
 
 (function(exports) {
+  const DEFAULT_ICON_URL = '/style/icons/Default.png';
+
   var _id = 0;
 
   var newTabManifestURL = null;
@@ -36,6 +39,7 @@
     this._recentTitle = false;
     this._titleTimeout = null;
     this.scrollable = app.browserContainer;
+    this.previousOrigin = '';
     this.render();
 
     if (this.app.themeColor) {
@@ -117,6 +121,7 @@
                         data-l10n-id="forward-button" disabled></button>
                 <div class="urlbar js-chrome-ssl-information">
                   <span class="pb-icon"></span>
+                  <div class="site-icon"></div>
                   <div class="chrome-ssl-indicator chrome-title-container">
                     <span class="title" dir="auto"></span>
                   </div>
@@ -188,6 +193,7 @@
     this.menuButton = this.element.querySelector('.menu-button');
     this.windowsButton = this.element.querySelector('.windows-button');
     this.title = this.element.querySelector('.title');
+    this.siteIcon = this.element.querySelector('.site-icon');
     this.sslIndicator =
       this.element.querySelector('.js-chrome-ssl-information');
 
@@ -680,6 +686,18 @@
 
       this.updateAddToHomeButton();
 
+      // We update the icon if the new page has a different origin.
+      var origin = this.getOriginFromURL(evt.detail);
+
+      if (this.previousOrigin !== origin) {
+        console.log('Origin changed %s to %s', this.previousOrigin, origin);
+        this.siteIcon.style.backgroundImage = `url("${DEFAULT_ICON_URL}")`;
+      } else {
+        console.log('Same origin %s', origin);
+      }
+
+      this.previousOrigin = origin;
+
       if (!this.app.isBrowser()) {
         return;
       }
@@ -717,6 +735,7 @@
 
   AppChrome.prototype.handleLoadEnd = function ac_handleLoadEnd(evt) {
     this.containerElement.classList.remove('loading');
+    this.setSiteIcon();
   };
 
   AppChrome.prototype.handleError = function ac_handleError(evt) {
@@ -884,6 +903,97 @@
         this.app.config.searchName : this.title.textContent;
       this.app.contextmenu.showDefaultMenu(newTabManifestURL, name);
     }
+  };
+
+  AppChrome.prototype.setSiteIcon = function ac_setSiteIcon(url) {
+    this.siteIcon.style.backgroundImage = `url("${DEFAULT_ICON_URL}")`;
+
+    this.getSiteIconUrl()
+      .then(iconUrl => {
+        if (iconUrl) {
+          this.siteIcon.style.backgroundImage = `url("${iconUrl}")`;
+        }
+      })
+      .catch((err) => {
+        console.log('Something went terribly wrong: %s', err);
+      });
+  };
+
+  AppChrome.prototype.getSiteIconUrl = function ac_getSiteIconUrl() {
+    const ICON_SIZE = 32;
+
+    return new Promise((resolve, reject) => {
+      var iconURL = null;
+
+      // Look for an icon in the manifest.
+      if (this.app.webManifestURL) {
+        WebManifestHelper
+          .getManifest(this.app.webManifestURL)
+          .then(webManifest => {
+            iconURL = WebManifestHelper.iconURLForSize(webManifest,
+              this.app.webManifestURL, ICON_SIZE);
+
+            if (iconURL && iconURL.href) {
+              console.log('Icon from web manifest', iconURL.href);
+              resolve(iconURL.href);
+            }
+
+            // @TODO Try other methods if no icons are listed in the manifest.
+          });
+      }
+
+      // If not, is there an apple touch tag / favicon?
+      else if (Object.keys(this.app.favicons).length) {
+        var dist = Infinity;
+        var iconCandidate = {};
+
+        // Look for an favicon without size as the fallback if present.
+        for (iconCandidate in this.app.favicons) {
+          if (!this.app.favicons[iconCandidate].sizes.length) {
+            iconURL = iconCandidate;
+          }
+        }
+
+        // Then look for the best candidate in favicons with sizes.
+        for (iconCandidate in this.app.favicons) {
+          if (this.app.favicons[iconCandidate].sizes.length) {
+            var width = this.app.favicons[iconCandidate].sizes[0].split('x')[0];
+            var parsedSize = parseInt(width);
+            if (Math.abs(parsedSize - ICON_SIZE) < dist) {
+              iconURL = iconCandidate;
+              dist = Math.abs(parsedSize - ICON_SIZE);
+            }
+          }
+        }
+
+        if (iconURL) {
+          console.log('Icon from meta tags', iconURL);
+          resolve(iconURL);
+        }
+      }
+
+      else {
+        // Otherwise, we look for a favicon.ico file in the origin.
+        iconURL = this.getOriginFromURL(this.app.origin) + '/favicon.ico';
+
+        // Does it even exist?
+        var img = document.createElement('img');
+        img.src = iconURL;
+        img.onerror = () => {
+          reject('No favicon available');
+        };
+        img.onload = () => {
+          console.log('Icon from origin/favicon.ico', iconURL);
+          resolve(iconURL);
+        };
+      }
+    });
+  };
+
+  AppChrome.prototype.getOriginFromURL = function ac_getOriginFromURL(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    return a.origin;
   };
 
   exports.AppChrome = AppChrome;
