@@ -51,7 +51,7 @@ section .bb-tablist > li > button[aria-selected="true"]:after {
 section .bb-tablist .bb-tabpanel,
 section .bb-tablist::before {
   bottom: unset;
-  top: 4.5rem;
+  top: 5.5rem;
 }
 
 section .bb-tablist::before {
