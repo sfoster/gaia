@@ -117,9 +117,9 @@
   height: 3.4rem;
   line-height: 3.4rem;
   margin: 0 0 0.5rem;
-  border-radius: 0 1.8rem 1.8rem 0;
+  border-radius: 1.8rem;
   color: inherit;
-  overflow: hidden;
+  overflow: visible;
   background-color: transparent;
   -moz-margin-start: .5rem;
   position: absolute;
@@ -146,10 +146,10 @@
 }
 
 .chrome-combined .chrome-title-container {
-  width: calc(100% - 3.2rem - 3.2rem);
+  width: calc(100% - 3.2rem);
   padding-top: 0;
   padding-bottom: 0;
-  -moz-padding-start: 1.45rem;
+  -moz-padding-start: 3.85rem;
   -moz-padding-end: 0.8rem;
   box-sizing: padding-box;
   overflow: hidden;
@@ -306,8 +306,10 @@
 .site-icon {
   width: 3.2rem;
   height: 3.2rem;
-  background: no-repeat center / 3rem content-box;
-  float: left;
+  margin-top: .1rem;
+  background: no-repeat center / 3.2rem content-box;
+  background-image: url('/style/icons/Default.png');
+  position: absolute;
 }
 
 /* Handle urlbar sizing when back or forward buttons are disabled */
