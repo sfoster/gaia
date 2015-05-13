@@ -7,6 +7,7 @@
 /* global SettingsListener */
 /* global Service */
 /* global WebManifestHelper */
+/* global PinCard */
 
 'use strict';
 
@@ -115,6 +116,13 @@
     return `<div class="chrome chrome-combined" id="${className}">
               <gaia-progress></gaia-progress>
               <div class="controls">
+                <section role="dialog" class="pin-dialog hidden">
+                  <header><h2>Pin Page</h2></header>
+                  <div class="card-container"></div>
+                  <button>Pin</button>
+                  <span>from</span>
+                  <p></p>
+                </section>
                 <button type="button" class="back-button"
                         data-l10n-id="back-button" disabled></button>
                 <button type="button" class="forward-button"
@@ -194,6 +202,7 @@
     this.windowsButton = this.element.querySelector('.windows-button');
     this.title = this.element.querySelector('.title');
     this.siteIcon = this.element.querySelector('.site-icon');
+    this.pinDialog = this.element.querySelector('.pin-dialog');
     this.sslIndicator =
       this.element.querySelector('.js-chrome-ssl-information');
 
@@ -291,6 +300,11 @@
         this.app.forward();
         break;
 
+      case this.siteIcon:
+        evt.stopImmediatePropagation();
+        this.onPin();
+        break;
+
       case this.title:
         this.titleClicked();
         break;
@@ -324,6 +338,11 @@
         this.onShare();
         break;
     }
+  };
+
+  AppChrome.prototype.onPin = function ac_onPin() {
+    this.pinDialog.classList.toggle('hidden');
+    this.setPinDialogCard();
   };
 
   AppChrome.prototype.titleClicked = function ac_titleClicked() {
@@ -377,6 +396,7 @@
       this.reloadButton.addEventListener('click', this);
       this.backButton.addEventListener('click', this);
       this.forwardButton.addEventListener('click', this);
+      this.siteIcon.addEventListener('click', this);
       this.title.addEventListener('click', this);
       this.scrollable.addEventListener('scroll', this);
       this.menuButton.addEventListener('click', this);
@@ -631,6 +651,7 @@
         return;
       }
       this.title.textContent = title;
+      // this.pinDialog.querySelector('header').textContent = title;
     };
 
   AppChrome.prototype.updateAddToHomeButton =
@@ -903,6 +924,19 @@
         this.app.config.searchName : this.title.textContent;
       this.app.contextmenu.showDefaultMenu(newTabManifestURL, name);
     }
+  };
+
+  AppChrome.prototype.setPinDialogCard = function ac_setPinDialogCard(url) {
+    var currentIcon = window.getComputedStyle(this.siteIcon).backgroundImage;
+    currentIcon = currentIcon.replace('url("', '').replace('")', '');
+    var info = {
+      title: 'title',
+      icons: JSON.parse('{"' + currentIcon +'":{}}')
+    };
+    var card = new PinCard(info);
+    var container = this.pinDialog.querySelector('.card-container');
+    container.innerHTML = '';
+    container.appendChild(card.element);
   };
 
   AppChrome.prototype.setSiteIcon = function ac_setSiteIcon(url) {
