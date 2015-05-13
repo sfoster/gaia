@@ -36,4 +36,5 @@
   font-size: 1.4rem;
   color: #000;
   margin: 1rem;
+  pointer-events: none;
 }
