@@ -522,6 +522,56 @@
   background-image: url("images/light/overflow_active.png");
 }
 
+section.pin-dialog::before {
+  bottom: 100%;
+  left: 0;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-bottom-color: #E5E5E5;
+  border-width: 12px;
+  margin-left: 0.4rem;
+}
+
+section.pin-dialog.hidden {
+  display: none;
+}
+
+section.pin-dialog {
+  width: 25rem;
+  height: 30rem;
+  display: block;
+  position: absolute;
+  background-color: #E5E5E5;
+  border-radius: 0.5rem;
+  top: 4.4rem;
+  left: 1rem;
+  font-size: 1.2rem;
+}
+
+section.pin-dialog header h2 {
+  font-size: 1.6rem;
+  font-weight: 400;
+  font-family: sans-serif;
+  font-style: italic;
+  text-align: center;
+}
+
+section.pin-dialog button {
+  position: absolute;
+  bottom: 1rem;
+  left: calc(50% - 5rem);
+  width: 10rem;
+  margin: 0 auto;
+}
+
+section.pin-dialog span {
+  color: #B8B8B8;
+}
+
 /* Overflow menu */
 
 gaia-overflow-menu button#new-window {

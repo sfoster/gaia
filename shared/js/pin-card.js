@@ -1,7 +1,7 @@
 /* exported ConfirmDialog */
 'use strict';
 (function(exports) {
-  var Card = function(cardData) {
+  var PinCard = function(cardData) {
     var container = document.createElement('div');
     container.classList.add('card');
 
@@ -34,5 +34,5 @@
     };
   };
 
-  exports.Card = Card;
+  exports.PinCard = PinCard;
 }(window));

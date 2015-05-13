@@ -3,7 +3,7 @@
 /* globals DateHelper */
 /* globals asyncStorage */
 /* globals LazyLoader */
-/* globals Card */
+/* globals PinCard */
 
 (function(exports) {
 
@@ -249,7 +249,7 @@
     store.read('frecency', MAX_TOPSITES_RESULTS, function(results) {
       var docFragment = document.createDocumentFragment();
       results.forEach(function(x) {
-        var card = new Card(x);
+        var card = new PinCard(x);
         docFragment.appendChild(card.element);
       });
       topPagesWrapper.innerHTML = '';
