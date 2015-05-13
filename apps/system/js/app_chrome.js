@@ -129,6 +129,14 @@
                 <button type="button" class="forward-button"
                         data-l10n-id="forward-button" disabled></button>
                 <div class="urlbar js-chrome-ssl-information">
+                  <section role="dialog" class="pin-dialog hidden">
+                    <a href="#" data-action="cancel">X</a>
+                    <header><h2>Pin Page</h2></header>
+                    <div class="card-container"></div>
+                    <button data-action="pin">Pin</button>
+                    <span>from</span>
+                    <span class="origin"></span>
+                  </section>
                   <span class="pb-icon"></span>
                   <div class="site-icon"></div>
                   <div class="chrome-ssl-indicator chrome-title-container">
@@ -205,6 +213,7 @@
     this.siteIcon = this.element.querySelector('.site-icon');
     this.pinDialog = this.element.querySelector('.pin-dialog');
     this.pinButton = this.element.querySelector('.pin-button')
+    this.closePin = this.pinDialog.querySelector('a[data-action="cancel"]');
     this.sslIndicator =
       this.element.querySelector('.js-chrome-ssl-information');
 
@@ -290,6 +299,11 @@
         this.app.reload();
         break;
 
+      case this.closePin:
+        evt.preventDefault();
+        this.hidePinDialog();
+        break;
+
       case this.stopButton:
         this.app.stop();
         break;
@@ -304,7 +318,7 @@
 
       case this.siteIcon:
         evt.stopImmediatePropagation();
-        this.onPin();
+        this.showPinDialog();
         break;
 
       case this.title:
@@ -346,9 +360,16 @@
     }
   };
 
-  AppChrome.prototype.onPin = function ac_onPin() {
-    this.pinDialog.classList.toggle('hidden');
-    this.setPinDialogCard();
+  AppChrome.prototype.showPinDialog = function ac_showPinDialog() {
+    if (!this.isMaximized()) {
+      return;
+    }
+    this.populatePinDialog();
+    this.pinDialog.classList.remove('hidden');
+  };
+
+  AppChrome.prototype.hidePinDialog = function ac_hidePinDialog() {
+    this.pinDialog.classList.add('hidden');
   };
 
   AppChrome.prototype.pin = function ac_pin() {
@@ -393,6 +414,7 @@
     // a scrollTop position of scrollTopMax - 1, which triggers the transition!
     var element = this.element;
     if (this.scrollable.scrollTop >= this.scrollable.scrollTopMax - 1) {
+      this.hidePinDialog();
       element.classList.remove('maximized');
     } else if(!this.pinned) {
       element.classList.add('maximized');
@@ -415,6 +437,7 @@
       this.backButton.addEventListener('click', this);
       this.forwardButton.addEventListener('click', this);
       this.siteIcon.addEventListener('click', this);
+      this.closePin.addEventListener('click', this);
       this.title.addEventListener('click', this);
       this.scrollable.addEventListener('scroll', this);
       this.menuButton.addEventListener('click', this);
@@ -443,6 +466,7 @@
         return;
       }
       var publishEvent = this.isMaximized() ? 'expanded' : 'collapsed';
+
       this.app.publish('chrome' + publishEvent);
     }.bind(this);
 
@@ -628,7 +652,7 @@
         Math.sqrt((r*r) * 0.241 + (g*g) * 0.691 + (b*b) * 0.068);
 
       var wasLight = self.app.element.classList.contains('light');
-      var isLight  = brightness > 200;
+      var isLight = brightness > 200;
       if (wasLight != isLight) {
         self.app.element.classList.toggle('light', isLight);
         self.app.publish('titlestatechanged');
@@ -671,7 +695,6 @@
         return;
       }
       this.title.textContent = title;
-      // this.pinDialog.querySelector('header').textContent = title;
     };
 
   AppChrome.prototype.updateAddToHomeButton =
@@ -738,6 +761,8 @@
       }
 
       this.previousOrigin = origin;
+
+      this.populatePinDialog();
 
       if (!this.app.isBrowser()) {
         return;
@@ -807,6 +832,7 @@
   AppChrome.prototype.collapse = function ac_collapse() {
     window.removeEventListener('rocketbar-overlayclosed', this);
     this.element.classList.remove('maximized');
+    this.hidePinDialog();
   };
 
   AppChrome.prototype.isMaximized = function ac_isMaximized() {
@@ -949,11 +975,16 @@
     }
   };
 
+  AppChrome.prototype.populatePinDialog = function ac_populate() {
+    this.pinDialog.querySelector('.origin').textContent = this.previousOrigin;
+    this.setPinDialogCard();
+  };
+
   AppChrome.prototype.setPinDialogCard = function ac_setPinDialogCard(url) {
     var currentIcon = window.getComputedStyle(this.siteIcon).backgroundImage;
     currentIcon = currentIcon.replace('url("', '').replace('")', '');
     var info = {
-      title: 'title',
+      title: this.title.textContent,
       icons: JSON.parse('{"' + currentIcon +'":{}}')
     };
     var card = new PinCard(info);
