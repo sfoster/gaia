@@ -776,6 +776,7 @@
         }
         this.scrollable.scrollTop = 0;
         this.pinned = false;
+        this.app.element.classList.add('collapsible');
       }
 
       // Set the title for the private browser landing page.
