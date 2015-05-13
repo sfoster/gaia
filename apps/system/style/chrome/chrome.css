@@ -295,7 +295,8 @@
   display: unset;
 }
 
-.maximized .chrome-has-ssl-indicator[data-ssl="secure"] .chrome-ssl-indicator {
+.maximized .chrome-has-ssl-indicator[data-ssl="secure"] .chrome-ssl-indicator,
+section.pin-dialog .origin::before {
   background-image: url("images/light/ssl.png");
 }
 
@@ -548,8 +549,8 @@ section.pin-dialog {
   background-color: #E5E5E5;
   border-radius: 0.5rem;
   top: 4.4rem;
-  left: 1rem;
   font-size: 1.2rem;
+  text-align: center;
 }
 
 section.pin-dialog header h2 {
@@ -557,19 +558,62 @@ section.pin-dialog header h2 {
   font-weight: 400;
   font-family: sans-serif;
   font-style: italic;
-  text-align: center;
 }
 
-section.pin-dialog button {
+section.pin-dialog a[data-action="cancel"] {
   position: absolute;
-  bottom: 1rem;
-  left: calc(50% - 5rem);
+  right: 1rem;
+  font-size: 1.6rem;
+  text-decoration: none;
+  color: #B8B8B8;
+}
+
+section.pin-dialog button[data-action="pin"] {
+  position: relative;
+  float: none;
   width: 10rem;
   margin: 0 auto;
+  background-color: #5F8DD3;
+  color: #fff;
+  font-style: normal;
 }
 
 section.pin-dialog span {
   color: #B8B8B8;
+  margin-top: 1rem;
+  display: block;
+  clear: both;
+}
+
+section.pin-dialog .origin {
+  font-size: 1.2rem;
+  color: #5D5D5D;
+  margin: 0;
+  padding: 0;
+  font-weight: 400;
+  line-height: 1.2rem;
+  margin-top: -2rem;
+}
+
+section.pin-dialog .origin::before {
+  content: "";
+  display: block;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin: 0;
+  position: relative;
+  top: 1.25rem;
+  left: 2.5rem;
+}
+
+.card-container {
+  margin: 1.5rem 0;
+}
+
+.card-container .card {
+  float: none;
+  margin: 0 auto;
+  width: 52%;
 }
 
 /* Overflow menu */
