@@ -41,6 +41,7 @@
     this._titleTimeout = null;
     this.scrollable = app.browserContainer;
     this.previousOrigin = '';
+    this.pinned = false;
     this.render();
 
     if (this.app.themeColor) {
@@ -119,7 +120,7 @@
                 <section role="dialog" class="pin-dialog hidden">
                   <header><h2>Pin Page</h2></header>
                   <div class="card-container"></div>
-                  <button>Pin</button>
+                  <button class="pin-button">Pin</button>
                   <span>from</span>
                   <p></p>
                 </section>
@@ -203,6 +204,7 @@
     this.title = this.element.querySelector('.title');
     this.siteIcon = this.element.querySelector('.site-icon');
     this.pinDialog = this.element.querySelector('.pin-dialog');
+    this.pinButton = this.element.querySelector('.pin-button')
     this.sslIndicator =
       this.element.querySelector('.js-chrome-ssl-information');
 
@@ -337,12 +339,28 @@
         evt.stopImmediatePropagation();
         this.onShare();
         break;
+
+      case this.pinButton:
+        this.pin();
+        break;
     }
   };
 
   AppChrome.prototype.onPin = function ac_onPin() {
     this.pinDialog.classList.toggle('hidden');
     this.setPinDialogCard();
+  };
+
+  AppChrome.prototype.pin = function ac_pin() {
+    this.pinDialog.classList.add('hidden');
+    this.collapse();
+    this.pinned = true;
+    this.app.element.classList.remove('collapsible');
+    window.places.setPinned(this._currentURL, true).then(function() {
+      console.log('Successfully pinned page in Places database.');
+    }, function() {
+      console.error('Failed to pin page in Places database.');
+    });
   };
 
   AppChrome.prototype.titleClicked = function ac_titleClicked() {
@@ -376,7 +394,7 @@
     var element = this.element;
     if (this.scrollable.scrollTop >= this.scrollable.scrollTopMax - 1) {
       element.classList.remove('maximized');
-    } else {
+    } else if(!this.pinned) {
       element.classList.add('maximized');
     }
 
@@ -401,6 +419,7 @@
       this.scrollable.addEventListener('scroll', this);
       this.menuButton.addEventListener('click', this);
       this.windowsButton.addEventListener('click', this);
+      this.pinButton.addEventListener('click', this);
     } else {
       this.header.addEventListener('action', this);
     }
@@ -436,6 +455,7 @@
       this.stopButton.removeEventListener('click', this);
       this.menuButton.removeEventListener('click', this);
       this.windowsButton.removeEventListener('click', this);
+      this.pinButton.removeEventListener('click', this);
       this.reloadButton.removeEventListener('click', this);
       this.backButton.removeEventListener('click', this);
       this.forwardButton.removeEventListener('click', this);
@@ -736,6 +756,7 @@
           this.element.classList.add('maximized');
         }
         this.scrollable.scrollTop = 0;
+        this.pinned = false;
       }
 
       // Set the title for the private browser landing page.
@@ -763,7 +784,7 @@
     if (evt.detail && evt.detail.type === 'fatal') {
       return;
     }
-    if (this.useCombinedChrome() && this.app.config.chrome.scrollable) {
+    if (this.useCombinedChrome() && this.app.config.chrome.scrollable && !this.pinned) {
       // When we get an error, keep the rocketbar maximized.
       this.element.classList.add('maximized');
       this.containerElement.classList.remove('scrollable');
@@ -772,7 +793,9 @@
 
   AppChrome.prototype.maximize = function ac_maximize(callback) {
     var element = this.element;
-    element.classList.add('maximized');
+    if (!this.pinned) {
+      element.classList.add('maximized');
+    }
     window.addEventListener('rocketbar-overlayclosed', this);
 
     if (!callback) {

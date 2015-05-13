@@ -415,12 +415,9 @@
      * @param {Boolean} value True for pin, false for un-pin.
      * @returns {Promise} Promise of a response.
      */
-    setPinned: function(url, value, linkedData) {
+    setPinned: function(url, value) {
       return this.editPlace(url, (place, callback) => {
-        place.pinnedPage = value;
-        if (linkedData) {
-          place.linkedData = linkedData;
-        }
+        place.pinned = value;
         callback(place);
       });
     }
