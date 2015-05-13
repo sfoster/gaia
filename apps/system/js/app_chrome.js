@@ -117,13 +117,6 @@
     return `<div class="chrome chrome-combined" id="${className}">
               <gaia-progress></gaia-progress>
               <div class="controls">
-                <section role="dialog" class="pin-dialog hidden">
-                  <header><h2>Pin Page</h2></header>
-                  <div class="card-container"></div>
-                  <button class="pin-button">Pin</button>
-                  <span>from</span>
-                  <p></p>
-                </section>
                 <button type="button" class="back-button"
                         data-l10n-id="back-button" disabled></button>
                 <button type="button" class="forward-button"
@@ -212,8 +205,9 @@
     this.title = this.element.querySelector('.title');
     this.siteIcon = this.element.querySelector('.site-icon');
     this.pinDialog = this.element.querySelector('.pin-dialog');
-    this.pinButton = this.element.querySelector('.pin-button')
-    this.closePin = this.pinDialog.querySelector('a[data-action="cancel"]');
+    this.pinButton = this.element.querySelector('.pin-button');
+    var closeSelector = '.pin-dialog a[data-action="cancel"]';
+    this.closePin = this.element.querySelector(closeSelector);
     this.sslIndicator =
       this.element.querySelector('.js-chrome-ssl-information');
 
@@ -416,7 +410,7 @@
     if (this.scrollable.scrollTop >= this.scrollable.scrollTopMax - 1) {
       this.hidePinDialog();
       element.classList.remove('maximized');
-    } else if(!this.pinned) {
+    } else if (!this.pinned) {
       element.classList.add('maximized');
     }
 
@@ -437,12 +431,12 @@
       this.backButton.addEventListener('click', this);
       this.forwardButton.addEventListener('click', this);
       this.siteIcon.addEventListener('click', this);
-      this.closePin.addEventListener('click', this);
+      this.closePin && this.closePin.addEventListener('click', this);
       this.title.addEventListener('click', this);
       this.scrollable.addEventListener('scroll', this);
       this.menuButton.addEventListener('click', this);
       this.windowsButton.addEventListener('click', this);
-      this.pinButton.addEventListener('click', this);
+      this.pinButton && this.pinButton.addEventListener('click', this);
     } else {
       this.header.addEventListener('action', this);
     }
@@ -809,7 +803,8 @@
     if (evt.detail && evt.detail.type === 'fatal') {
       return;
     }
-    if (this.useCombinedChrome() && this.app.config.chrome.scrollable && !this.pinned) {
+    if (this.useCombinedChrome() &&
+      this.app.config.chrome.scrollable && !this.pinned) {
       // When we get an error, keep the rocketbar maximized.
       this.element.classList.add('maximized');
       this.containerElement.classList.remove('scrollable');
@@ -976,6 +971,10 @@
   };
 
   AppChrome.prototype.populatePinDialog = function ac_populate() {
+    if (!this.pinDialog) {
+      return;
+    }
+
     this.pinDialog.querySelector('.origin').textContent = this.previousOrigin;
     this.setPinDialogCard();
   };
