@@ -205,7 +205,7 @@
     this.title = this.element.querySelector('.title');
     this.siteIcon = this.element.querySelector('.site-icon');
     this.pinDialog = this.element.querySelector('.pin-dialog');
-    this.pinButton = this.element.querySelector('.pin-button');
+    this.pinButton = this.element.querySelector('button[data-action="pin"]');
     var closeSelector = '.pin-dialog a[data-action="cancel"]';
     this.closePin = this.element.querySelector(closeSelector);
     this.sslIndicator =
