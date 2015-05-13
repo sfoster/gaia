@@ -83,6 +83,7 @@
         window.addEventListener('apptitlechange', this);
         window.addEventListener('appiconchange', this);
         window.addEventListener('apploaded', this);
+        window.addEventListener('applinkeddatachange', this);
 
         asyncStorage.getItem('top-sites', results => {
           this.topSites = results || [];
@@ -137,6 +138,9 @@
             this.takeScreenshot(app.config.url);
           }
           this.debouncePlaceChanges(app.config.url);
+          break;
+        case 'applinkeddatachange':
+          this.onLinkedDataChange(app.config.url, app.linkedData);
           break;
       }
     },
@@ -323,6 +327,12 @@
       this.debounce(url);
     },
 
+    onLinkedDataChange: function(url, linkedData) {
+      this._placeChanges[url] = this._placeChanges[url] || this.defaultPlace();
+      this._placeChanges[url].linkedData = linkedData;
+      this.debounce(url);
+    },
+
     /**
      * Set place title.
      *
@@ -407,10 +417,10 @@
         cb(place);
       });
     },
-    
+
     /**
      * Pin/un-pin a page.
-     * 
+     *
      * @param {String} url The URL of the page to pin.
      * @param {Boolean} value True for pin, false for un-pin.
      * @returns {Promise} Promise of a response.
