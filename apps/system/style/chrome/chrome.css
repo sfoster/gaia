@@ -565,6 +565,7 @@ section.pin-dialog a {
   text-decoration: none;
   width: 1.6rem;
   height: 1.6rem;
+  background-size: 1.6rem 1.6rem;
 }
 
 section.pin-dialog a[data-action="cancel"] {
@@ -595,6 +596,17 @@ section.pin-dialog button[data-action="pin"] {
   font-style: normal;
 }
 
+section.pin-dialog button[data-action="pin"]::before {
+  content: "";
+  width: 0.8rem;
+  height: 1.6rem;
+  position: absolute;
+  top: 1.5rem;
+  left: 2rem;
+  background-size: 0.8rem 1.6rem;
+  background-image: url("images/pin.png");
+}
+
 section.pin-dialog span {
   color: #B8B8B8;
   margin-top: 1rem;
@@ -619,8 +631,10 @@ section.pin-dialog .origin::before {
   height: 2.2rem;
   margin: 0;
   position: relative;
-  top: .55rem;
+  top: 1rem;
   left: 2.5rem;
+  background-position: 3rem center;
+  background-size: 3rem auto;
 }
 
 .card-container {
@@ -632,7 +646,7 @@ section.pin-dialog .origin::before {
   overflow: hidden;
 }
 
-.card-container .card {
+.card-container .pin-card {
   position: absolute;
   float: none;
   margin: 0 auto;
