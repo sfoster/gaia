@@ -3,7 +3,7 @@
 (function(exports) {
   var PinCard = function(cardData) {
     var container = document.createElement('div');
-    container.classList.add('card');
+    container.classList.add('pin-card');
 
     var header = document.createElement('header');
     var content = document.createElement('p');
