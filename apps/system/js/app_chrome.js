@@ -227,6 +227,21 @@
     }
   };
 
+  AppChrome.prototype.getName = function ac_getName() {
+    if (!this.app.isBrowser() && this.app.name) {
+      return this.app.name;
+    }
+
+    if (this.app.webManifestURL) {
+      WebManifestHelper.getManifest(this.app.webManifestURL)
+        .then(webManifest => {
+          this.currentAppName = webManifest.name;
+        });
+    }
+    var domain = this.pinDialog.querySelector('.origin').textContent;
+    return this.currentAppName || domain;
+  };
+
   AppChrome.prototype.handleEvent = function ac_handleEvent(evt) {
     switch (evt.type) {
       case 'rocketbar-overlayclosed':
@@ -384,7 +399,8 @@
     cards[1].classList.remove('left');
     this.pinButton.dataset.pin = 'site';
     this.nextPin.hidden = true;
-    this.pinDialog.querySelector('header h2').textContent = 'Pin Site';
+    var title = 'Pin ' + this.getName();
+    this.pinDialog.querySelector('header h2').textContent = title;
     this.previousPin.hidden = false;
   };
 
@@ -405,9 +421,12 @@
   AppChrome.prototype.generateSitePin = function ac_generateSitePin(icon) {
     var card = document.createElement('div');
     var img = document.createElement('img');
+    var span = document.createElement('span');
+    span.className = 'appName';
     img.className = 'site-pin';
     img.src = icon;
     card.appendChild(img);
+    card.appendChild(span);
     card.className = 'left';
     return card;
   };
@@ -585,7 +604,7 @@
     if (this.isSearchApp()) {
       return;
     }
-    this.title.textContent = title;
+    this.title.textContent = this.currentAppName;
     clearTimeout(this._titleTimeout);
     this._recentTitle = true;
     this._titleTimeout = setTimeout((function() {
@@ -619,6 +638,9 @@
     this.sslIndicator.classList.toggle(
       'chrome-has-ssl-indicator', sslState === 'broken' || sslState === 'secure'
     );
+    this.pinDialog.classList.toggle('secure',
+      sslState === 'broken' || sslState === 'secure'
+    );
   };
 
   AppChrome.prototype.handleTitleChanged = function(evt) {
@@ -633,6 +655,12 @@
   AppChrome.prototype.handleMetaChange =
     function ac__handleMetaChange(evt) {
       var detail = evt.detail;
+
+      if (detail.name === 'application-name') {
+        this.currentAppName = detail.content;
+        this.setAppName();
+      }
+
       if (detail.name !== 'theme-color' || !detail.type) {
         return;
       }
@@ -748,7 +776,7 @@
           this._fixedTitle) {
         return;
       }
-      this.title.textContent = title;
+      this.title.textContent = this.currentAppName;
     };
 
   AppChrome.prototype.updateAddToHomeButton =
@@ -810,6 +838,7 @@
       if (this.previousOrigin !== origin) {
         console.log('Origin changed %s to %s', this.previousOrigin, origin);
         this.siteIcon.style.backgroundImage = `url("${DEFAULT_ICON_URL}")`;
+        this.currentAppName = origin;
       } else {
         console.log('Same origin %s', origin);
       }
@@ -1052,9 +1081,19 @@
     container.appendChild(card.element);
     var sitePin = this.generateSitePin(currentIcon);
     container.appendChild(sitePin);
+    this.setAppName();
+  };
+
+  AppChrome.prototype.setAppName = function ac_setAppName() {
+    var cards = this.pinDialog.querySelectorAll('.card-container div');
+    cards[1].querySelector('span').textContent = this.getName();
   };
 
   AppChrome.prototype.setSiteIcon = function ac_setSiteIcon(url) {
+    if (!this.siteIcon) {
+      return;
+    }
+
     this.siteIcon.style.backgroundImage = `url("${DEFAULT_ICON_URL}")`;
 
     this.getSiteIconUrl()
