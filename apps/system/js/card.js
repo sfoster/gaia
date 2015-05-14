@@ -91,7 +91,7 @@
    */
   Card.prototype.template = function() {
     return Tagged.escapeHTML `<div class="titles">
-     <h1 id="${this.titleId}" dir="auto" class="title">${this.title}</h1>
+     <h1 dir="auto" class="title page-title">${this.pageTitle}</h1>
      <p class="subtitle">
       <span class="subtitle-url">${this.subTitle}</span>
      </p>
@@ -102,7 +102,9 @@
     <div class="privateOverlay"></div>
     <div class="appIconView" style="background-image:${this.iconValue}"></div>
 
-    <footer class="card-tray">
+    <header class="card-tray">
+     <h1 id="${this.titleId}" dir="auto"
+         class="card-title title">${this.title}</h1>
      <button class="appIcon" data-l10n-id="openCard"
        data-button-action="select" aria-hidden="true"></button>
      <menu class="buttonbar">
@@ -113,7 +115,7 @@
         data-button-action="favorite" role="button"
         style="visibility: ${this.favoriteButtonVisibility}"></button>
      </menu>
-    </footer>`;
+    </header>`;
   };
 
   /**
@@ -130,9 +132,11 @@
    */
   Card.prototype._populateViewData = function() {
     var app = this.app;
-    this.title = (app.isBrowser() && app.title) ? app.title : app.name;
-    this.sslState = app.getSSLState();
+    var hostname = new URL(app.url || app.origin).hostname;
+    this.title = app.isBrowser() ? app.siteName || hostname : app.name;
+    this.pageTitle = (app.isBrowser() && app.title) ? app.title : '';
     this.subTitle = '';
+    this.sslState = app.getSSLState();
     this.iconValue = '';
     this.closeButtonVisibility = 'visible';
     this.viewClassList = ['card', 'appIconPreview'];
@@ -187,7 +191,7 @@
     deltaY = deltaY || 0;
 
     var windowWidth = this.manager.windowWidth || window.innerWidth;
-    var offset = this.position - this.manager.position;
+    var offset = this.position - this.manager.cardPosition;
     var positionX = deltaX + offset * (windowWidth * 0.55);
     var appliedX = positionX;
 
@@ -250,6 +254,7 @@
     }
 
     this._fetchElements();
+
     this._updateDisplay();
 
     this.publish('rendered');
@@ -311,50 +316,67 @@
    */
   Card.prototype._updateDisplay = function c_updateDisplay() {
     var elem = this.element;
+    var screenshotViews = this.screenshotViews;
 
     var app = this.app;
     if (app.isBrowser()) {
       elem.classList.add('browser');
     }
+    if (this.iconValue) {
+      this.iconButton.style.backgroundImage = this.iconValue;
+    }
 
-    var screenshotView = this.screenshotView;
     var isIconPreview = !this.getScreenshotPreviewsSetting();
     if (isIconPreview) {
       elem.classList.add('appIconPreview');
     } else {
       elem.classList.remove('appIconPreview');
-      if (screenshotView.style.backgroundImage) {
+    }
+
+    // get the first 3 apps
+    var apps = this.group ? this.group.slice(0, 3) : [this.app];
+    // we insertBefore, so last in array will be first in DOM
+    apps.forEach((app, idx) => {
+      var screenshotView = screenshotViews[idx];
+      if (!screenshotView) {
+        var refNode = elem.querySelector('.screenshotView');
+        screenshotView = refNode.cloneNode(true);
+        elem.insertBefore(screenshotView, refNode);
+        screenshotView.style.backgroundImage = '';
+      }
+      screenshotView.dataset.groupindex = idx;
+
+      if (!isIconPreview && screenshotView.style.backgroundImage) {
+        console.log('Card, keeping existing backgroundImage:',
+                    screenshotView.style.backgroundImage);
         return;
       }
-    }
 
-    if (this.iconValue) {
-      this.iconButton.style.backgroundImage = this.iconValue;
-    }
-
-    if (isIconPreview) {
-      return;
-    }
-
-    // Use a cached screenshot if we have one for the active app
-    var cachedLayer;
-    if (app.isActive()) {
-      // will be null or blob url
-      cachedLayer = app.requestScreenshotURL();
-      screenshotView.classList.toggle('fullscreen',
-                                      app.isFullScreen());
-      if (app.appChrome) {
-        screenshotView.classList.toggle('maximized',
-                                      app.appChrome.isMaximized());
+      // Use a cached screenshot if we have one for the active app
+      var cachedLayer;
+      if (app.isActive()) {
+        // will be null or blob url
+        cachedLayer = app.requestScreenshotURL();
+        screenshotView.classList.toggle('fullscreen',
+                                        app.isFullScreen());
+        if (app.appChrome) {
+          screenshotView.classList.toggle('maximized',
+                                        app.appChrome.isMaximized());
+        }
       }
+      screenshotView.style.backgroundImage =
+        (cachedLayer ? 'url(' + cachedLayer + ')' : 'none' ) + ',' +
+        '-moz-element(#' + this.app.instanceID + ')';
+    });
+    // tidy up extra screenshots
+    screenshotViews = this.element.querySelectorAll('.screenshotView');
+    for (var i = apps.length; i < screenshotViews.length; i++) {
+      screenshotViews[i].parentNode.removeChild(screenshotViews[i]);
     }
-    screenshotView.style.backgroundImage =
-      (cachedLayer ? 'url(' + cachedLayer + ')' : 'none' ) + ',' +
-      '-moz-element(#' + this.app.instanceID + ')';
   };
 
   Card.prototype._fetchElements = function c__fetchElements() {
-    this.screenshotView = this.element.querySelector('.screenshotView');
+    this.screenshotViews = this.element.querySelectorAll('.screenshotView');
     this.titleNode = this.element.querySelector('h1.title');
     this.iconButton = this.element.querySelector('.appIcon');
   };
