@@ -431,7 +431,16 @@
     if (locked || contextMenu) {
       return;
     }
-    window.dispatchEvent(new CustomEvent('global-search-request'));
+
+    if (!this.isMaximized()) {
+      if (this.pinned) {
+        this.app.element.classList.add('collapsible');
+        this.scrollable.scrollTop = 0;
+      }
+      this.maximize();
+    } else {
+      window.dispatchEvent(new CustomEvent('global-search-request'));
+    }
   };
 
   AppChrome.prototype.handleActionEvent = function ac_handleActionEvent(evt) {
@@ -456,6 +465,9 @@
     if (this.scrollable.scrollTop >= this.scrollable.scrollTopMax - 1) {
       this.hidePinDialog();
       element.classList.remove('maximized');
+      if (this.pinned) {
+        this.app.element.classList.remove('collapsible');
+      }
     } else if (!this.pinned) {
       element.classList.add('maximized');
     }
@@ -862,9 +874,7 @@
 
   AppChrome.prototype.maximize = function ac_maximize(callback) {
     var element = this.element;
-    if (!this.pinned) {
-      element.classList.add('maximized');
-    }
+    element.classList.add('maximized');
     window.addEventListener('rocketbar-overlayclosed', this);
 
     if (!callback) {
