@@ -25,7 +25,7 @@
   function getIcon(uri, iconSize, placeObj = {}, siteObj = {}) {
     var iconUrl;
 
-    if (siteObj.webManifestUrl && siteObj.webManifest) {
+    if (siteObj.manifestUrl && siteObj.manifest) {
       iconUrl = getWebManifestBestIcon(siteObj, iconSize);
     }
 
@@ -37,7 +37,8 @@
     if (!iconUrl) {
       var a = document.createElement('a');
       a.href = uri;
-      iconUrl = `${a.origin}/favicon.ico#-moz-resolution=${iconSize},${iconSize}`;
+      iconUrl =
+        `${a.origin}/favicon.ico#-moz-resolution=${iconSize},${iconSize}`;
     }
 
     return new Promise(resolve => {
@@ -58,8 +59,8 @@
   }
 
   function getWebManifestBestIcon(siteObj, iconSize) {
-    var icons = siteObj.webManifest.icons;
-    var webManifestUrl = siteObj.webManifestUrl;
+    var icons = siteObj.manifest.icons;
+    var webManifestUrl = siteObj.manifestUrl;
 
     if (!icons) {
       return null;

@@ -1015,8 +1015,8 @@
         WebManifestHelper.getManifest(this.app.webManifestURL)
           .then(webManifest => {
             var siteObj = {
-              webManifestUrl: this.app.webManifestURL,
-              webManifest: webManifest
+              manifestUrl: this.app.webManifestURL,
+              manifest: webManifest
             };
 
             resolve(this.getIconBlob(this.app.origin, ICON_SIZE,
