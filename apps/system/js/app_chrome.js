@@ -123,10 +123,12 @@
                         data-l10n-id="forward-button" disabled></button>
                 <div class="urlbar js-chrome-ssl-information">
                   <section role="dialog" class="pin-dialog hidden">
-                    <a href="#" data-action="cancel">X</a>
+                    <a href="#" data-action="cancel"></a>
+                    <a href="#" data-action="next"></a>
+                    <a href="#" data-action="previous" hidden></a>
                     <header><h2>Pin Page</h2></header>
                     <div class="card-container"></div>
-                    <button data-action="pin">Pin</button>
+                    <button data-pin="page" data-action="pin">Pin</button>
                     <span>from</span>
                     <span class="origin"></span>
                   </section>
@@ -207,7 +209,11 @@
     this.pinDialog = this.element.querySelector('.pin-dialog');
     this.pinButton = this.element.querySelector('button[data-action="pin"]');
     var closeSelector = '.pin-dialog a[data-action="cancel"]';
+    var nextSelector = '.pin-dialog a[data-action="next"]';
+    var previousSelector = '.pin-dialog a[data-action="previous"]';
     this.closePin = this.element.querySelector(closeSelector);
+    this.nextPin = this.element.querySelector(nextSelector);
+    this.previousPin = this.element.querySelector(previousSelector);
     this.sslIndicator =
       this.element.querySelector('.js-chrome-ssl-information');
 
@@ -298,6 +304,16 @@
         this.hidePinDialog();
         break;
 
+      case this.nextPin:
+        evt.preventDefault();
+        this.nextCard();
+        break;
+
+      case this.previousPin:
+        evt.preventDefault();
+        this.previousCard();
+        break;
+
       case this.stopButton:
         this.app.stop();
         break;
@@ -362,8 +378,38 @@
     this.pinDialog.classList.remove('hidden');
   };
 
+  AppChrome.prototype.nextCard = function ac_nextCard() {
+    var cards = this.pinDialog.querySelectorAll('.card-container div');
+    cards[0].classList.add('right');
+    cards[1].classList.remove('left');
+    this.pinButton.dataset.pin = 'site';
+    this.nextPin.hidden = true;
+    this.pinDialog.querySelector('header h2').textContent = 'Pin Site';
+    this.previousPin.hidden = false;
+  };
+
+  AppChrome.prototype.previousCard = function ac_previousCard() {
+    var cards = this.pinDialog.querySelectorAll('.card-container div');
+    cards[0].classList.remove('right');
+    cards[1].classList.add('left');
+    this.pinButton.dataset.pin = 'page';
+    this.pinDialog.querySelector('header h2').textContent = 'Pin Page';
+    this.nextPin.hidden = false;
+    this.previousPin.hidden = true;
+  };
+
   AppChrome.prototype.hidePinDialog = function ac_hidePinDialog() {
     this.pinDialog.classList.add('hidden');
+  };
+
+  AppChrome.prototype.generateSitePin = function ac_generateSitePin(icon) {
+    var card = document.createElement('div');
+    var img = document.createElement('img');
+    img.className = 'site-pin';
+    img.src = icon;
+    card.appendChild(img);
+    card.className = 'left';
+    return card;
   };
 
   AppChrome.prototype.pin = function ac_pin() {
@@ -432,6 +478,8 @@
       this.forwardButton.addEventListener('click', this);
       this.siteIcon.addEventListener('click', this);
       this.closePin && this.closePin.addEventListener('click', this);
+      this.nextPin && this.nextPin.addEventListener('click', this);
+      this.previousPin && this.previousPin.addEventListener('click', this);
       this.title.addEventListener('click', this);
       this.scrollable.addEventListener('scroll', this);
       this.menuButton.addEventListener('click', this);
@@ -978,6 +1026,7 @@
 
     this.pinDialog.querySelector('.origin').textContent = this.previousOrigin;
     this.setPinDialogCard();
+    this.previousCard();
   };
 
   AppChrome.prototype.setPinDialogCard = function ac_setPinDialogCard(url) {
@@ -991,6 +1040,8 @@
     var container = this.pinDialog.querySelector('.card-container');
     container.innerHTML = '';
     container.appendChild(card.element);
+    var sitePin = this.generateSitePin(currentIcon);
+    container.appendChild(sitePin);
   };
 
   AppChrome.prototype.setSiteIcon = function ac_setSiteIcon(url) {
