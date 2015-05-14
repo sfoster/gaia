@@ -428,6 +428,9 @@
     setPinned: function(url, value) {
       return this.editPlace(url, (place, callback) => {
         place.pinned = value;
+        if (value) {
+          place.pinTime = Date.now();
+        }
         callback(place);
       });
     }
