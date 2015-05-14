@@ -106,9 +106,6 @@ body.dragging gaia-grid {
   left: 100vw;
   width: 100vw;
   height: calc(100% - 5rem - 3rem);
-  display: flex;
-  justify-content: center;
-  align-items: center;
   color: white;
   font-size: 1.5rem;
   text-shadow: rgba(0, 0, 0, 0.6) 0 0.1rem 0.5rem;
