@@ -1019,14 +1019,14 @@
               manifest: webManifest
             };
 
-            resolve(this.getIconBlob(this.app.origin, ICON_SIZE,
+            resolve(this.getIconBlob(this.app.config.url, ICON_SIZE,
               {icons: this.app.favicons}, siteObj));
           })
           .catch(() => {
             reject(`Can't get the web manifest file.`);
           });
       } else {
-        resolve(this.getIconBlob(this.app.origin, ICON_SIZE,
+        resolve(this.getIconBlob(this.app.config.url, ICON_SIZE,
           {icons: this.app.favicons}));
       }
     });

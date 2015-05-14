@@ -27,10 +27,12 @@
 
     if (siteObj.manifestUrl && siteObj.manifest) {
       iconUrl = getWebManifestBestIcon(siteObj, iconSize);
+      console.log('Tried to get icon URL from manifest, got ' + iconUrl);
     }
 
     if (!iconUrl && placeObj.icons) {
       iconUrl = getBestIcon(placeObj.icons, iconSize);
+      console.log('Tried to get icon URL from place, got ' + iconUrl);
     }
 
     // If we dont pick up a valid icon, use favicon.ico at the origin
@@ -39,6 +41,7 @@
       a.href = uri;
       iconUrl =
         `${a.origin}/favicon.ico#-moz-resolution=${iconSize},${iconSize}`;
+      console.log('Tried to create well known icon URL, got ' + iconUrl);
     }
 
     return new Promise(resolve => {
@@ -50,9 +53,13 @@
                 iconStore.add(iconObj, iconUrl).then(() => {
                   resolve(iconObj);
                 });
+              }).catch((err) => {
+                console.error('Failed to fetch icon: %s', err);
               });
           }
           resolve(iconObj);
+        }).catch((err) => {
+          console.error('Failed to get icon from iconStore: %s', err);
         });
       });
     });
