@@ -560,12 +560,29 @@ section.pin-dialog header h2 {
   font-style: italic;
 }
 
-section.pin-dialog a[data-action="cancel"] {
+section.pin-dialog a {
   position: absolute;
-  right: 1rem;
-  font-size: 1.6rem;
   text-decoration: none;
-  color: #B8B8B8;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+section.pin-dialog a[data-action="cancel"] {
+  right: 1.5rem;
+  background-image: url("images/close.png");
+  top: 1.5rem;
+}
+
+section.pin-dialog a[data-action="next"] {
+  right: 2.5rem;
+  background-image: url("images/arrow_right.png");
+  top: 12.5rem;
+}
+
+section.pin-dialog a[data-action="previous"] {
+  left: 2.5rem;
+  background-image: url("images/arrow_left.png");
+  top: 12.5rem;
 }
 
 section.pin-dialog button[data-action="pin"] {
@@ -591,7 +608,7 @@ section.pin-dialog .origin {
   margin: 0;
   padding: 0;
   font-weight: 400;
-  line-height: 1.2rem;
+  line-height: 0;
   margin-top: -2rem;
 }
 
@@ -602,18 +619,43 @@ section.pin-dialog .origin::before {
   height: 2.2rem;
   margin: 0;
   position: relative;
-  top: 1.25rem;
+  top: .55rem;
   left: 2.5rem;
 }
 
 .card-container {
-  margin: 1.5rem 0;
+  height: 12rem;
+  padding-top: 2rem;
+  position: relative;
+  width: 60%;
+  margin: 0 auto;
+  overflow: hidden;
 }
 
 .card-container .card {
+  position: absolute;
   float: none;
   margin: 0 auto;
-  width: 52%;
+  transform: translateX(0);
+}
+
+.card-container > * {
+  transition: transform 0.2s ease-in-out;
+  width: 100%;
+}
+
+.card-container img.site-pin {
+  width: 6.4rem;
+  height: 6.4rem;
+  margin-top: 2rem;
+}
+
+.card-container .right {
+  transform: translateX(100%);
+}
+
+.card-container .left {
+  transform: translateX(-100%);
 }
 
 /* Overflow menu */
