@@ -52,6 +52,9 @@
               .then(iconObj => {
                 iconStore.add(iconObj, iconUrl).then(() => {
                   resolve(iconObj);
+                }).catch((err) => {
+                  resolve(iconObj);
+                  console.log('Failed adding icon:', err);
                 });
               }).catch((err) => {
                 console.error('Failed to fetch icon: %s', err);

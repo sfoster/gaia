@@ -1,5 +1,7 @@
 /* exported ConfirmDialog */
+/* global IconsHelper */
 'use strict';
+
 (function(exports) {
   var PinCard = function(cardData) {
     var container = document.createElement('div');
@@ -9,12 +11,12 @@
     var content = document.createElement('p');
     header.textContent = cardData.title ? cardData.title : '';
     content.textContent = cardData.content ? cardData.content : '';
+    var icon = document.createElement('img');
 
-    if (cardData.icons && Object.keys(cardData.icons).length) {
-      var icon = document.createElement('img');
-      icon.src = cardData.icons ? Object.keys(cardData.icons)[0] : '';
+    IconsHelper.getIcon(cardData.url, 32, cardData).then(iconBlob => {
+      icon.src = URL.createObjectURL(iconBlob.blob);
       container.appendChild(icon);
-    }
+    });
 
     if (cardData.screenshot || cardData.tile) {
       var img = cardData.screenshot || cardData.tile;

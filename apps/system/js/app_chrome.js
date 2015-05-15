@@ -41,6 +41,7 @@
     this.scrollable = app.browserContainer;
     this.previousOrigin = '';
     this.pinned = false;
+    this.currentTitle = '';
     this.render();
 
     if (this.app.themeColor) {
@@ -601,6 +602,7 @@
     if (this.isSearchApp()) {
       return;
     }
+    this.currentTitle = title;
     this.title.textContent = this.currentAppName;
     clearTimeout(this._titleTimeout);
     this._recentTitle = true;
@@ -1069,8 +1071,9 @@
     var currentIcon = window.getComputedStyle(this.siteIcon).backgroundImage;
     currentIcon = currentIcon.replace('url("', '').replace('")', '');
     var info = {
-      title: this.title.textContent,
-      icons: JSON.parse('{"' + currentIcon +'":{}}')
+      url: this.app.config.url,
+      title: this.currentTitle,
+      icons: JSON.parse('{"' + currentIcon +'":{"sizes":[]}}')
     };
     var card = new PinCard(info);
     var container = this.pinDialog.querySelector('.card-container');
