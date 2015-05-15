@@ -433,11 +433,41 @@
     this.collapse();
     this.pinned = true;
     this.app.element.classList.remove('collapsible');
-    window.places.setPinned(this._currentURL, true).then(function() {
-      console.log('Successfully pinned page in Places database.');
-    }, function() {
-      console.error('Failed to pin page in Places database.');
-    });
+    
+    if (this.pinButton.dataset.pin == 'page') {
+      window.places.setPinned(this._currentURL, true).then(function() {
+        console.log('Successfully pinned page in Places database.');
+      }, function() {
+        console.error('Failed to pin page in Places database.');
+      });
+    } else if (this.pinButton.dataset.pin == 'site') {
+      var siteId = null;
+      var siteObject = {};
+      var manifestUrl = this.app.webManifestURL;
+      var manifestObject = this.app.webManifestObject;
+      var pageUrl = this.app.config.url;
+      if (manifestUrl && manifestObject) {
+        siteId = manifestUrl;
+        siteObject.manifest = manifestObject;
+        siteObject.name = manifestObject.short_name || manifestObject.name ||
+          this.getHostnameFromUrl(pageUrl);
+        siteObject.scope = new URL(manifestObject.scope || '/', pageUrl).href;
+        siteObject.manifestUrl = manifestUrl;
+      } else {
+        siteId = this.getOriginFromURL(this.app.config.url);
+        siteObject.name = this.app.name || this.getHostnameFromUrl(pageUrl);
+        siteObject.scope = new URL('/', pageUrl).href;
+      }
+      siteObject.frecency = 1;
+      siteObject.pinned = true;
+      siteObject.pinnedFrom = pageUrl;
+
+      BookmarksDatabase.put(siteObject, siteId).then(function() {
+        console.log('Successfully saved site ' + JSON.stringify(siteObject));
+      }, function() {
+        console.error('Failed to save site');
+      });
+    }
   };
 
   AppChrome.prototype.titleClicked = function ac_titleClicked() {
@@ -1143,6 +1173,12 @@
     var a = document.createElement('a');
     a.href = url;
     return a.origin;
+  };
+
+  AppChrome.prototype.getHostnameFromURL = function ac_getHostnameFromURL(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    return a.hostname;
   };
 
   exports.AppChrome = AppChrome;

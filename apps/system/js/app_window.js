@@ -1158,7 +1158,7 @@
     function aw__handle_mozbrowsermanifestchange(evt) {
       if (evt.detail.href) {
         this.webManifestURL = evt.detail.href;
-        WebManifestHelper.getManifest(this.app.webManifestURL)
+        WebManifestHelper.getManifest(this.webManifestURL)
         .then(webManifest => {
           this.webManifestObject = webManifest;
         });
