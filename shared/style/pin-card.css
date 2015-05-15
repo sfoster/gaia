@@ -8,6 +8,7 @@
   height: 10.5rem;
   border-radius: 5px;
   background-color: #E4E4E4;
+  background-size: cover;
 }
 
 .pin-card::before {
@@ -35,6 +36,10 @@
   top: 2rem;
   font-size: 1.4rem;
   color: #000;
+  width: calc(100% - 2rem);
   margin: 1rem;
   pointer-events: none;
+  overflow: hidden;
+  height: 6.2rem;
+  line-height: 1.6rem;
 }
