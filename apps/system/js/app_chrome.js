@@ -6,7 +6,6 @@
 /* global MozActivity */
 /* global SettingsListener */
 /* global Service */
-/* global WebManifestHelper */
 /* global PinCard */
 
 'use strict';
@@ -232,12 +231,10 @@
       return this.app.name;
     }
 
-    if (this.app.webManifestURL) {
-      WebManifestHelper.getManifest(this.app.webManifestURL)
-        .then(webManifest => {
-          this.currentAppName = webManifest.name;
-        });
+    if (this.app.webManifestObject && this.app.webManifestObject.name) {
+      this.currentAppName = this.app.webManifestObject.name;
     }
+
     var domain = this.pinDialog.querySelector('.origin').textContent;
     return this.currentAppName || domain;
   };
@@ -1112,19 +1109,13 @@
 
     return new Promise((resolve, reject) => {
       if (this.app.webManifestURL) {
-        WebManifestHelper.getManifest(this.app.webManifestURL)
-          .then(webManifest => {
-            var siteObj = {
-              manifestUrl: this.app.webManifestURL,
-              manifest: webManifest
-            };
+        var siteObj = {
+          manifestUrl: this.app.webManifestURL,
+          manifest: this.app.webManifestObject
+        };
 
-            resolve(this.getIconBlob(this.app.config.url, ICON_SIZE,
-              {icons: this.app.favicons}, siteObj));
-          })
-          .catch(() => {
-            reject(`Can't get the web manifest file.`);
-          });
+        resolve(this.getIconBlob(this.app.config.url, ICON_SIZE,
+          {icons: this.app.favicons}, siteObj));
       } else {
         resolve(this.getIconBlob(this.app.config.url, ICON_SIZE,
           {icons: this.app.favicons}));

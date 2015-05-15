@@ -5,6 +5,7 @@
 /* global BrowserFrame */
 /* global layoutManager */
 /* global ManifestHelper */
+/* global WebManifestHelper */
 /* global OrientationManager */
 /* global ScreenLayout */
 /* global SettingsListener */
@@ -1157,6 +1158,10 @@
     function aw__handle_mozbrowsermanifestchange(evt) {
       if (evt.detail.href) {
         this.webManifestURL = evt.detail.href;
+        WebManifestHelper.getManifest(this.app.webManifestURL)
+        .then(webManifest => {
+          this.webManifestObject = webManifest;
+        });
       }
     };
 
