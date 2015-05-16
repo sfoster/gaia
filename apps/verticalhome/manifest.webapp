@@ -57,6 +57,10 @@
     "collections_store": {
       "readonly": false,
       "description": "Display collections"
+    },
+    "icons": {
+      "access": "readwrite",
+      "description": "Cache website icons."
     }
   },
   "datastores-owned": {
