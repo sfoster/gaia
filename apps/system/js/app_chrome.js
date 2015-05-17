@@ -7,6 +7,7 @@
 /* global SettingsListener */
 /* global Service */
 /* global PinCard */
+/* global UrlHelper */
 
 'use strict';
 
@@ -36,8 +37,6 @@
     this.app = app;
     this.instanceID = _id++;
     this.containerElement = app.element;
-    this._recentTitle = false;
-    this._titleTimeout = null;
     this.scrollable = app.browserContainer;
     this.previousOrigin = '';
     this.pinned = false;
@@ -53,8 +52,7 @@
       this._fixedTitle = true;
       this.title.dataset.l10nId = 'search-the-web';
     } else if (!this.app.isBrowser() && this.app.name) {
-      this._gotName = true;
-      this.setFreshTitle(this.app.name);
+      this.title.textContent = this.app.name;
     }
 
     this.reConfig();
@@ -65,10 +63,6 @@
   AppChrome.prototype.CLASS_NAME = 'AppChrome';
 
   AppChrome.prototype.EVENT_PREFIX = 'chrome';
-
-  AppChrome.prototype.FRESH_TITLE = 500;
-
-  AppChrome.prototype.LOCATION_COALESCE = 250;
 
   AppChrome.prototype._DEBUG = false;
 
@@ -227,19 +221,6 @@
     }
   };
 
-  AppChrome.prototype.getName = function ac_getName() {
-    if (!this.app.isBrowser() && this.app.name) {
-      return this.app.name;
-    }
-
-    if (this.app.webManifestObject && this.app.webManifestObject.name) {
-      this.currentAppName = this.app.webManifestObject.name;
-    }
-
-    var domain = this.pinDialog.querySelector('.origin').textContent;
-    return this.currentAppName || domain;
-  };
-
   AppChrome.prototype.handleEvent = function ac_handleEvent(evt) {
     switch (evt.type) {
       case 'rocketbar-overlayclosed':
@@ -280,8 +261,8 @@
         this.handleError(evt);
         break;
 
-      case 'mozbrowserlocationchange':
-        this.handleLocationChanged(evt);
+      case '_locationchange':
+        this.handleLocationChange();
         break;
 
       case 'mozbrowserscrollareachanged':
@@ -292,17 +273,14 @@
         this.handleSecurityChanged(evt);
         break;
 
-      case 'mozbrowsertitlechange':
-        this.handleTitleChanged(evt);
+      case '_namechanged':
+        this.handleNameChanged();
         break;
 
       case 'mozbrowsermetachange':
         this.handleMetaChange(evt);
         break;
 
-      case '_namechanged':
-        this.handleNameChanged(evt);
-        break;
     }
   };
 
@@ -397,7 +375,7 @@
     cards[1].classList.remove('left');
     this.pinButton.dataset.pin = 'site';
     this.nextPin.hidden = true;
-    var title = 'Pin ' + this.getName();
+    var title = 'Pin ' + this.app.name;
     this.pinDialog.querySelector('header h2').textContent = title;
     this.previousPin.hidden = false;
   };
@@ -434,7 +412,7 @@
     this.collapse();
     this.pinned = true;
     this.app.element.classList.remove('collapsible');
-    
+
     if (this.pinButton.dataset.pin == 'page') {
       window.places.setPinned(this._currentURL, true).then(function() {
         console.log('Successfully pinned page in Places database.');
@@ -451,12 +429,12 @@
         siteId = manifestUrl;
         siteObject.manifest = manifestObject;
         siteObject.name = manifestObject.short_name || manifestObject.name ||
-          this.getHostnameFromUrl(pageUrl);
+          UrlHelper.getHostname(pageUrl);
         siteObject.scope = new URL(manifestObject.scope || '/', pageUrl).href;
         siteObject.manifestUrl = manifestUrl;
       } else {
-        siteId = this.getOriginFromURL(this.app.config.url);
-        siteObject.name = this.app.name || this.getHostnameFromUrl(pageUrl);
+        siteId = UrlHelper.getOrigin(this.app.config.url);
+        siteObject.name = this.app.name || UrlHelper.getHostname(pageUrl);
         siteObject.scope = new URL('/', pageUrl).href;
       }
       siteObject.frecency = 1;
@@ -551,14 +529,13 @@
     this.app.element.addEventListener('mozbrowserloadstart', this);
     this.app.element.addEventListener('mozbrowserloadend', this);
     this.app.element.addEventListener('mozbrowsererror', this);
-    this.app.element.addEventListener('mozbrowserlocationchange', this);
-    this.app.element.addEventListener('mozbrowsertitlechange', this);
+    this.app.element.addEventListener('_locationchange', this);
+    this.app.element.addEventListener('_namechanged', this);
     this.app.element.addEventListener('mozbrowsermetachange', this);
     this.app.element.addEventListener('mozbrowserscrollareachanged', this);
     this.app.element.addEventListener('_securitychange', this);
     this.app.element.addEventListener('_loading', this);
     this.app.element.addEventListener('_loaded', this);
-    this.app.element.addEventListener('_namechanged', this);
 
     var element = this.element;
 
@@ -609,12 +586,11 @@
     this.app.element.removeEventListener('mozbrowserloadstart', this);
     this.app.element.removeEventListener('mozbrowserloadend', this);
     this.app.element.removeEventListener('mozbrowsererror', this);
-    this.app.element.removeEventListener('mozbrowserlocationchange', this);
-    this.app.element.removeEventListener('mozbrowsertitlechange', this);
+    this.app.element.removeEventListener('_locationchange', this);
+    this.app.element.removeEventListener('_namechanged', this);
     this.app.element.removeEventListener('mozbrowsermetachange', this);
     this.app.element.removeEventListener('_loading', this);
     this.app.element.removeEventListener('_loaded', this);
-    this.app.element.removeEventListener('_namechanged', this);
     this.app = null;
   };
 
@@ -625,21 +601,7 @@
         return;
       }
       this.title.textContent = this.app.name;
-      this._gotName = true;
     };
-
-  AppChrome.prototype.setFreshTitle = function ac_setFreshTitle(title) {
-    if (this.isSearchApp()) {
-      return;
-    }
-    this.currentTitle = title;
-    this.title.textContent = this.currentAppName;
-    clearTimeout(this._titleTimeout);
-    this._recentTitle = true;
-    this._titleTimeout = setTimeout((function() {
-      this._recentTitle = false;
-    }).bind(this), this.FRESH_TITLE);
-  };
 
   AppChrome.prototype.handleScrollAreaChanged = function(evt) {
     // Check if the page has become scrollable and add the scrollable class.
@@ -672,23 +634,9 @@
     );
   };
 
-  AppChrome.prototype.handleTitleChanged = function(evt) {
-    if (this._gotName || this._fixedTitle) {
-      return;
-    }
-
-    this.setFreshTitle(evt.detail || this._currentURL);
-    this._titleChanged = true;
-  };
-
   AppChrome.prototype.handleMetaChange =
     function ac__handleMetaChange(evt) {
       var detail = evt.detail;
-
-      if (detail.name === 'application-name') {
-        this.currentAppName = detail.content;
-        this.setAppName();
-      }
 
       if (detail.name !== 'theme-color' || !detail.type) {
         return;
@@ -799,15 +747,6 @@
     return this.app.config.chrome && !this.app.config.chrome.bar;
   };
 
-  AppChrome.prototype._updateLocation =
-    function ac_updateTitle(title) {
-      if (this._titleChanged || this._gotName || this._recentTitle ||
-          this._fixedTitle) {
-        return;
-      }
-      this.title.textContent = this.currentAppName;
-    };
-
   AppChrome.prototype.updateAddToHomeButton =
     function ac_updateAddToHomeButton() {
       if (!this.addToHomeButton || !BookmarksDatabase) {
@@ -823,25 +762,24 @@
       }.bind(this));
     };
 
-  AppChrome.prototype.handleLocationChanged =
-    function ac_handleLocationChange(evt) {
+  AppChrome.prototype.handleLocationChange =
+    function ac_handleLocationChange() {
       if (!this.app) {
         return;
       }
 
       // Check if this is just a location-change to an anchor tag.
       var anchorChange = false;
-      if (this._currentURL && evt.detail) {
+      if (this._currentURL && this.app.config.url) {
         anchorChange =
           this._currentURL.replace(/#.*/g, '') ===
-          evt.detail.replace(/#.*/g, '');
+          this.app.config.url.replace(/#.*/g, '');
       }
 
-      // We wait a small while because if we get a title/name it's even better
-      // and we don't want the label to flash
-      setTimeout(this._updateLocation.bind(this, evt.detail),
-                 this.LOCATION_COALESCE);
-      this._currentURL = evt.detail;
+      this._currentURL = this.app.config.url;
+      if (!this._fixedTitle) {
+        this.title.textContent = this.app.name;
+      }
 
       if (this.backButton && this.forwardButton) {
         this.app.canGoForward(function forwardSuccess(result) {
@@ -862,12 +800,11 @@
       this.updateAddToHomeButton();
 
       // We update the icon if the new page has a different origin.
-      var origin = this.getOriginFromURL(evt.detail);
+      var origin = UrlHelper.getOrigin(this.app.config.url);
 
       if (this.previousOrigin !== origin) {
         console.log('Origin changed %s to %s', this.previousOrigin, origin);
         this.siteIcon.style.backgroundImage = `url("${DEFAULT_ICON_URL}")`;
-        this.currentAppName = origin;
       } else {
         console.log('Same origin %s', origin);
       }
@@ -879,9 +816,6 @@
       if (!this.app.isBrowser()) {
         return;
       }
-
-      // We havent got a name for this location
-      this._gotName = false;
 
       if (!anchorChange) {
         // Make the rocketbar unscrollable until the page resizes to the
@@ -903,14 +837,12 @@
       // back button. Otherwise it could be in the constructor.
       if (this.app.isPrivateBrowser() &&
         this.app.config.url.startsWith('app:')) {
-        this._gotName = true;
         this.title.dataset.l10nId = 'search-or-enter-address';
       }
     };
 
   AppChrome.prototype.handleLoadStart = function ac_handleLoadStart(evt) {
     this.containerElement.classList.add('loading');
-    this._titleChanged = false;
   };
 
   AppChrome.prototype.handleLoadEnd = function ac_handleLoadEnd(evt) {
@@ -1092,7 +1024,8 @@
       return;
     }
 
-    this.pinDialog.querySelector('.origin').textContent = this.previousOrigin;
+    this.pinDialog.querySelector('.origin').textContent =
+      UrlHelper.getHostname(this.app.config.url);
     this.setPinDialogCard();
     this.previousCard();
   };
@@ -1102,7 +1035,7 @@
     currentIcon = currentIcon.replace('url("', '').replace('")', '');
     var info = {
       url: this.app.config.url,
-      title: this.currentTitle,
+      title: this.app.title,
       icons: JSON.parse('{"' + currentIcon +'":{"sizes":[]}}')
     };
     var card = new PinCard(info);
@@ -1116,7 +1049,7 @@
 
   AppChrome.prototype.setAppName = function ac_setAppName() {
     var cards = this.pinDialog.querySelectorAll('.card-container div');
-    cards[1].querySelector('span').textContent = this.getName();
+    cards[1].querySelector('span').textContent = this.app.name;
   };
 
   AppChrome.prototype.setSiteIcon = function ac_setSiteIcon(url) {
@@ -1170,18 +1103,6 @@
           reject(err);
         });
     });
-  };
-
-  AppChrome.prototype.getOriginFromURL = function ac_getOriginFromURL(url) {
-    var a = document.createElement('a');
-    a.href = url;
-    return a.origin;
-  };
-
-  AppChrome.prototype.getHostnameFromURL = function ac_getHostnameFromURL(url) {
-    var a = document.createElement('a');
-    a.href = url;
-    return a.hostname;
   };
 
   exports.AppChrome = AppChrome;

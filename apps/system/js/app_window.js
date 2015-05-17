@@ -12,6 +12,7 @@
 /* global StatusBar */
 /* global Service */
 /* global DUMP */
+/* global UrlHelper */
 'use strict';
 
 (function(exports) {
@@ -134,9 +135,7 @@
     // Store initial configuration in this.config
     this.config = configuration;
 
-    if (!this.manifest && this.config && this.config.title) {
-      this.updateName(this.config.title);
-    } else {
+    if (this.manifest) {
       this.name = new ManifestHelper(this.manifest).displayName;
     }
 
@@ -200,17 +199,6 @@
       // requests the |navigation| flag in their manifest.
       this.config.chrome.maximized = true;
     }
-  };
-
-  /**
-   * Update the name of this window.
-   * @param {String} name The new name.
-   */
-  AppWindow.prototype.updateName = function aw_updateName(name) {
-    if (this.config && this.config.title) {
-      this.config.title = name;
-    }
-    this.name = name;
   };
 
   /**
@@ -1074,6 +1062,8 @@
       this.favicons = {};
       this.webManifestURL = null;
       this.config.url = evt.detail;
+      this.title = evt.detail;
+      this.name = UrlHelper.getHostname(evt.detail);
       // Integration test needs to locate the frame by this attribute.
       this.browser.element.dataset.url = evt.detail;
       this.publish('locationchange');
@@ -1144,10 +1134,10 @@
         case 'application-name':
           // Apps have a compulsory name field in their manifest
           // which takes precedence.
-          if (!this.isBrowser()) {
+          if (!this.isBrowser() || this.webManifestURL) {
             return;
           }
-          this.updateName(detail.content);
+          this.name = detail.content;
           this.publish('namechanged');
           break;
       }
@@ -1159,8 +1149,14 @@
       if (evt.detail.href) {
         this.webManifestURL = evt.detail.href;
         WebManifestHelper.getManifest(this.webManifestURL)
-        .then(webManifest => {
+        .then((function(webManifest) {
           this.webManifestObject = webManifest;
+          if (webManifest.short_name || webManifest.name) {
+            this.name = webManifest.short_name || webManifest.name;
+            this.publish('namechanged');
+          }
+        }).bind(this), function() {
+          console.error('Failed to get web manifest.'); 
         });
       }
     };
