@@ -84,6 +84,7 @@
         window.addEventListener('appiconchange', this);
         window.addEventListener('apploaded', this);
         window.addEventListener('applinkeddatachange', this);
+        window.addEventListener('appthemecolorchange', this);
 
         asyncStorage.getItem('top-sites', results => {
           this.topSites = results || [];
@@ -141,6 +142,9 @@
           break;
         case 'applinkeddatachange':
           this.onLinkedDataChange(app.config.url, app.linkedData);
+          break;
+        case 'appthemecolorchange':
+          this.onThemeColorChange(app.config.url, app.themeColor);
           break;
       }
     },
@@ -333,6 +337,12 @@
       this.debounce(url);
     },
 
+    onThemeColorChange: function(url, color) {
+      this._placeChanges[url] = this._placeChanges[url] || this.defaultPlace();
+      this._placeChanges[url].themeColor = color;
+      this.debounce(url);
+    },
+
     /**
      * Set place title.
      *
@@ -393,6 +403,10 @@
         // Update the title if it's not the default (matches the URL)
         if (edits.title !== url) {
           place.title = edits.title;
+        }
+
+        if (edits.themeColor) {
+          place.themeColor = edits.themeColor;
         }
 
         if (edits.visited) {
