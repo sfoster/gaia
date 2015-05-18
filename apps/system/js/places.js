@@ -410,6 +410,13 @@
           place.icons[iconUri] = edits.icons[iconUri];
         }
 
+        if (!place.linkedData) {
+          place.linkedData = {};
+        }
+        for (var ldKey in edits.linkedData) {
+          place.linkedData[ldKey] = edits.linkedData[ldKey];
+        }
+
         place = this.addToVisited(place);
         this.checkTopSites(place);
 
