@@ -1103,8 +1103,8 @@
   };
 
   AppChrome.prototype.setAppName = function ac_setAppName() {
-    var cards = this.pinDialog.querySelectorAll('.card-container div');
-    cards[1].querySelector('span').textContent = this.app.name;
+    var nameEl = this.pinDialog.querySelector('.card-container .appName');
+    nameEl.textContent = this.app.name;
   };
 
   AppChrome.prototype.setSiteIcon = function ac_setSiteIcon(url) {
