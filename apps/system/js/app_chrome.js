@@ -428,11 +428,15 @@
           UrlHelper.getHostname(pageUrl);
         siteObject.scope = new URL(manifestObject.scope || '/', pageUrl).href;
         siteObject.manifestUrl = manifestUrl;
+        siteObject.url = manifestObject.start_url ||
+          UrlHelper.getOrigin(this.app.config.url);
       } else {
         siteId = UrlHelper.getOrigin(this.app.config.url);
         siteObject.name = this.app.name || UrlHelper.getHostname(pageUrl);
+        siteObject.url = UrlHelper.getOrigin(this.app.config.url);
         siteObject.scope = new URL('/', pageUrl).href;
       }
+      siteObject.id = siteId;
       siteObject.frecency = 1;
       siteObject.pinned = true;
       siteObject.pinnedFrom = pageUrl;
