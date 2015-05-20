@@ -1,5 +1,6 @@
 /* global Card, eventSafety, SettingsListener, layoutManager,
-          Service, homescreenLauncher, StackManager, OrientationManager */
+          UrlHelper, Service, homescreenLauncher, StackManager,
+          OrientationManager */
 
 (function(exports) {
   'use strict';
@@ -156,7 +157,7 @@
     // First add an item to the cardsList for each app group
     var stack = this.stack;
     stack.forEach((app, stackIdx) => {
-      var groupKey = app.isBrowser() ? (new URL(app.url)).hostname : app.origin;
+      var groupKey = app.manifestURL || UrlHelper.getOrigin(app.config.url);
       var group;
       if (this.cardGroups.has(groupKey)) {
         group = this.cardGroups.get(groupKey);
@@ -164,6 +165,7 @@
         group = [];
         this.cardGroups.set(groupKey, group);
       }
+
       // save the cardPosition for the current app while we're looping through
       // yeah, I know, this Map is kinda a pita (or I'm doing it wrong).
       // TODO: refactor
