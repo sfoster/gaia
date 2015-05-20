@@ -72,7 +72,7 @@
   */
   Card.prototype.toString = function() {
     return '[' + this.CLASS_NAME + ' ' +
-            this.position + ':' + this.title + ']';
+            this.position + ':' + this.cardTitle + ']';
   };
 
   /**
@@ -104,7 +104,7 @@
 
     <header class="card-tray">
      <h1 id="${this.titleId}" dir="auto"
-         class="card-title title">${this.title}</h1>
+         class="card-title title">${this.cardTitle}</h1>
      <button class="appIcon" data-l10n-id="openCard"
        data-button-action="select" aria-hidden="true"></button>
      <menu class="buttonbar">
@@ -132,8 +132,7 @@
    */
   Card.prototype._populateViewData = function() {
     var app = this.app;
-    var hostname = new URL(app.url || app.origin).hostname;
-    this.title = app.isBrowser() ? app.siteName || hostname : app.name;
+    this.cardTitle = app.isBrowser() ? app.name : app.config.name;
     this.pageTitle = (app.isBrowser() && app.title) ? app.title : '';
     this.subTitle = '';
     this.sslState = app.getSSLState();
@@ -178,7 +177,7 @@
     var topMostWindow = app.getTopMostWindow();
     if (topMostWindow && topMostWindow.CLASS_NAME === 'TrustedWindow') {
       var name = topMostWindow.name;
-      this.title = CardsHelper.escapeHTML(name || '', true);
+      this.cardTitle = CardsHelper.escapeHTML(name || '', true);
       this.viewClassList.push('trustedui');
     } else if (!this.app.killable()) {
       // unclosable app
