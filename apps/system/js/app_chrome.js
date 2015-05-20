@@ -277,6 +277,10 @@
         this.handleNameChanged();
         break;
 
+      case '_manifestchange':
+        this.handleManifestChange();
+        break;
+
       case 'mozbrowsermetachange':
         this.handleMetaChange(evt);
         break;
@@ -547,6 +551,7 @@
     this.app.element.addEventListener('mozbrowsererror', this);
     this.app.element.addEventListener('_locationchange', this);
     this.app.element.addEventListener('_namechanged', this);
+    this.app.element.addEventListener('_manifestchange', this);
     this.app.element.addEventListener('mozbrowsermetachange', this);
     this.app.element.addEventListener('mozbrowserscrollareachanged', this);
     this.app.element.addEventListener('_securitychange', this);
@@ -604,20 +609,27 @@
     this.app.element.removeEventListener('mozbrowsererror', this);
     this.app.element.removeEventListener('_locationchange', this);
     this.app.element.removeEventListener('_namechanged', this);
+    this.app.element.removeEventListener('_manifestchange', this);
     this.app.element.removeEventListener('mozbrowsermetachange', this);
     this.app.element.removeEventListener('_loading', this);
     this.app.element.removeEventListener('_loaded', this);
     this.app = null;
   };
 
-  // Name has priority over the rest
   AppChrome.prototype.handleNameChanged =
-    function ac_handleNameChanged(evt) {
-      if (this._fixedTitle) {
-        return;
-      }
-      this.title.textContent = this.app.name;
-    };
+    function ac_handleNameChanged() {
+    if (this._fixedTitle) {
+      return;
+    }
+    this.title.textContent = this.app.name;
+  };
+
+  AppChrome.prototype.handleManifestChange =
+    function ac_handleManifestChange() {
+    if (this.app.webManifestURL) {
+      this.updateScope(this.app.webManifestURL);
+    }
+  };
 
   AppChrome.prototype.handleScrollAreaChanged = function(evt) {
     // Check if the page has become scrollable and add the scrollable class.

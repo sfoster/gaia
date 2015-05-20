@@ -1151,6 +1151,7 @@
         WebManifestHelper.getManifest(this.webManifestURL)
         .then((function(webManifest) {
           this.webManifestObject = webManifest;
+          this.publish('manifestchange');
           if (webManifest.short_name || webManifest.name) {
             this.name = webManifest.short_name || webManifest.name;
             this.publish('namechanged');
