@@ -59,6 +59,26 @@
       results.forEach(function(x) {
         var card = new PinCard(x);
         docFragment.appendChild(card.element);
+        card.element.onclick = function launch(data) {
+          if (!data.url) {
+            return;
+          }
+
+          var features = {
+            name: data.title ? data.title : '',
+            remote: true
+          };
+
+          if (this.element.dataset.iconUrl) {
+            features.icon = this.element.dataset.iconUrl;
+          }
+
+          window.open(data.url, '_blank', Object.keys(features)
+            .map(function eachFeature(key) {
+            return encodeURIComponent(key) + '=' +
+              encodeURIComponent(features[key]);
+          }).join(','));
+        }.bind(card, x);
       });
       container.innerHTML = '';
       container.appendChild(docFragment);

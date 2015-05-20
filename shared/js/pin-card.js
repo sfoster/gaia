@@ -14,11 +14,14 @@
     var icon = document.createElement('img');
 
     IconsHelper.getIcon(cardData.url, 32, cardData).then(iconBlob => {
-      if (iconBlob) {
-        var imgUrl = URL.createObjectURL(iconBlob.blob);
-        icon.style.backgroundImage = 'url(' + imgUrl + ')';
+      if (!iconBlob) {
+        return;
       }
 
+      var iconUrl = URL.createObjectURL(iconBlob.blob);
+      container.dataset.iconUrl = iconUrl;
+
+      icon.style.backgroundImage = 'url(' + iconUrl + ')';
       container.appendChild(icon);
     });
 
