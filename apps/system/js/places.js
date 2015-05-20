@@ -202,6 +202,18 @@
       };
     },
 
+    getPlace: function(url) {
+      return new Promise((function(resolve, reject) {
+        this.getStore().then(function(store) {
+          return store.get(url);
+        }).then(function(place) {
+          resolve(place);
+        }).catch(function(error) {
+          reject();
+        });
+      }).bind(this));
+    },
+
     /**
      * Helper function to edit a place record in the datastore.
      * @param {String} url The URL of a place.
