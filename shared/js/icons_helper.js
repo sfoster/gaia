@@ -58,11 +58,13 @@
                 });
               }).catch((err) => {
                 console.error('Failed to fetch icon: %s', err);
+                resolve();
               });
           }
           resolve(iconObj);
         }).catch((err) => {
           console.error('Failed to get icon from iconStore: %s', err);
+          resolve();
         });
       });
     });
