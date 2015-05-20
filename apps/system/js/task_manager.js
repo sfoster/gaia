@@ -157,7 +157,7 @@
     // First add an item to the cardsList for each app group
     var stack = this.stack;
     stack.forEach((app, stackIdx) => {
-      var groupKey = app.manifestURL || UrlHelper.getOrigin(app.config.url);
+      var groupKey = app.webManifestURL || UrlHelper.getOrigin(app.config.url);
       var group;
       if (this.cardGroups.has(groupKey)) {
         group = this.cardGroups.get(groupKey);
