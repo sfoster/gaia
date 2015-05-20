@@ -27,6 +27,8 @@
   left: calc(50% - 1.5rem);
   width: 3rem;
   height: 3rem;
+  background: url(pin-card/images/default_icon.png);
+  background-size: cover;
 }
 
 .pin-card header {
