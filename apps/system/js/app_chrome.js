@@ -1091,8 +1091,18 @@
       return;
     }
 
-    this.pinDialog.querySelector('.origin').textContent =
-      UrlHelper.getHostname(this.app.config.url);
+    var origin = UrlHelper.getHostname(this.app.config.url).split('.');
+    var originElement = this.pinDialog.querySelector('.origin');
+    var tld = document.createElement('span');
+    tld.className = 'tld';
+    tld.textContent = origin.slice(origin.length - 2, origin.length).join('.');
+
+    if (origin.length > 2) {
+      var subdomains = origin.slice(0, origin.length - 2).join('.');
+      originElement.textContent =  subdomains + '.';
+    }
+
+    originElement.appendChild(tld);
     this.setPinDialogCard();
     this.previousCard();
   };
