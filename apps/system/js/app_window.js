@@ -13,6 +13,7 @@
 /* global Service */
 /* global DUMP */
 /* global UrlHelper */
+/* global IconsHelper */
 'use strict';
 
 (function(exports) {
@@ -1072,7 +1073,7 @@
 
   AppWindow.prototype._handle_mozbrowsericonchange =
     function aw__handle_mozbrowsericonchange(evt) {
-
+      console.log(this.config.url || this.origin, 'mozbrowsericonchange', evt);
       var href = evt.detail.href;
       var sizes = evt.detail.sizes;
 
@@ -1157,7 +1158,7 @@
             this.publish('namechanged');
           }
         }).bind(this), function() {
-          console.error('Failed to get web manifest.'); 
+          console.error('Failed to get web manifest.');
         });
       }
     };
@@ -2440,5 +2441,44 @@
       this.statusbar.handleStatusbarTouch(evt, barHeight);
     }
   };
+
+  AppWindow.prototype.getSiteIconUrl = function ac_getSiteIconUrl(iconSize) {
+    const ICON_SIZE = 32;
+    if (!iconSize) {
+      iconSize = ICON_SIZE;
+    }
+
+    return new Promise((resolve, reject) => {
+      if (this.webManifestURL) {
+        var siteObj = {
+          manifestUrl: this.webManifestURL,
+          manifest: this.webManifestObject
+        };
+
+        resolve(this.getIconBlob(this.config.url, ICON_SIZE,
+          {icons: this.favicons}, siteObj));
+      } else {
+        resolve(this.getIconBlob(this.config.url, ICON_SIZE,
+          {icons: this.favicons}));
+      }
+    });
+  };
+
+  AppWindow.prototype.getIconBlob = function ac_getIconBlob(origin, iconSize,
+    placeObj = {}, siteObj = {}) {
+
+    return new Promise((resolve, reject) => {
+      IconsHelper.getIcon(origin, iconSize, placeObj, siteObj)
+        .then(iconBlob => {
+          var iconUrl = URL.createObjectURL(iconBlob.blob);
+
+          resolve(iconUrl);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  };
+
   exports.AppWindow = AppWindow;
 }(window));
