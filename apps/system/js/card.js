@@ -1,5 +1,4 @@
 /* globals BaseUI, CardsHelper, Tagged */
-
 /* exported Card */
 
 'use strict';
@@ -141,17 +140,20 @@
     this.viewClassList = ['card', 'appIconPreview'];
     this.titleId = 'card-title-' + this.instanceID;
 
+    var currentUrl = app.config.url;
+
     if (app.isPrivate) {
       this.viewClassList.push('private');
     }
 
-    // app icon overlays screenshot by default
-    // and will be removed if/when we display the screenshot
-    var size = CARD_FOOTER_ICON_SIZE * window.devicePixelRatio;
-    var iconURI = CardsHelper.getIconURIForApp(this.app, size);
-    if (iconURI) {
-      this.iconValue = 'url(' + iconURI + ')';
-    }
+    app.getSiteIconUrl(CARD_FOOTER_ICON_SIZE).then(iconUrl => {
+      console.log('card for %s, updating iconButton with:', iconUrl);
+      this._updateIcon(iconUrl);
+    }).catch(err => {
+      console.warn('card for %s, error from getSiteIconUrl: %s, ',
+                   currentUrl, err);
+      this._updateIcon();
+    });
 
     var origin = app.origin;
     var frameForScreenshot = app.getFrameForScreenshot();
@@ -307,6 +309,16 @@
     }
     this.element = this.manager = this.app = null;
     this.publish('destroyed');
+  };
+
+  Card.prototype._updateIcon = function updateIcon(iconUrl) {
+    if (!iconUrl) {
+      var size = CARD_FOOTER_ICON_SIZE * window.devicePixelRatio;
+      iconUrl = CardsHelper.getIconURIForApp(this.app, size);
+    }
+    this.iconValue = iconUrl ? 'url(' + iconUrl + ')' : '';
+    // TODO: better transition options here if we use an image element
+    this.iconButton.style.backgroundImage = this.iconValue;
   };
 
   /**

@@ -1139,7 +1139,7 @@
 
     this.siteIcon.style.backgroundImage = `url("${DEFAULT_ICON_URL}")`;
 
-    this.getSiteIconUrl()
+    this.app.getSiteIconUrl()
       .then(iconUrl => {
         if (iconUrl) {
           this.siteIcon.style.backgroundImage = `url("${iconUrl}")`;
@@ -1148,41 +1148,6 @@
       .catch((err) => {
         console.log('Something went terribly wrong: %s', err);
       });
-  };
-
-  AppChrome.prototype.getSiteIconUrl = function ac_getSiteIconUrl() {
-    const ICON_SIZE = 32;
-
-    return new Promise((resolve, reject) => {
-      if (this.app.webManifestURL) {
-        var siteObj = {
-          manifestUrl: this.app.webManifestURL,
-          manifest: this.app.webManifestObject
-        };
-
-        resolve(this.getIconBlob(this.app.config.url, ICON_SIZE,
-          {icons: this.app.favicons}, siteObj));
-      } else {
-        resolve(this.getIconBlob(this.app.config.url, ICON_SIZE,
-          {icons: this.app.favicons}));
-      }
-    });
-  };
-
-  AppChrome.prototype.getIconBlob = function ac_getIconBlob(origin, iconSize,
-    placeObj = {}, siteObj = {}) {
-
-    return new Promise((resolve, reject) => {
-      IconsHelper.getIcon(origin, iconSize, placeObj, siteObj)
-        .then(iconBlob => {
-          var iconUrl = URL.createObjectURL(iconBlob.blob);
-
-          resolve(iconUrl);
-        })
-        .catch(err => {
-          reject(err);
-        });
-    });
   };
 
   exports.AppChrome = AppChrome;

@@ -57,7 +57,7 @@
                   console.log('Failed adding icon:', err);
                 });
               }).catch((err) => {
-                console.error('Failed to fetch icon: %s', err);
+                console.error('Failed to fetch icon: %s, %s', iconUrl, err);
                 resolve();
               });
           }
