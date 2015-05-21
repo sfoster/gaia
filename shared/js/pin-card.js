@@ -64,6 +64,9 @@
     var content = document.createElement('p');
     header.textContent = getTitle(cardData);
     content.textContent = getDescription(cardData);
+    if (!content.textContent) {
+      container.classList.add('no-content');
+    }
     var icon = document.createElement('img');
 
     IconsHelper.getIcon(cardData.url, 32, cardData).then(iconBlob => {
