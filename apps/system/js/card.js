@@ -136,6 +136,7 @@
     this.subTitle = '';
     this.sslState = app.getSSLState();
     this.iconValue = '';
+    this.iconPending = true;
     this.closeButtonVisibility = 'visible';
     this.viewClassList = ['card', 'appIconPreview'];
     this.titleId = 'card-title-' + this.instanceID;
@@ -319,6 +320,8 @@
     this.iconValue = iconUrl ? 'url(' + iconUrl + ')' : '';
     // TODO: better transition options here if we use an image element
     this.iconButton.style.backgroundImage = this.iconValue;
+    this.iconPending = false;
+    this.iconButton.classList.remove('pending');
   };
 
   /**
@@ -335,6 +338,9 @@
     }
     if (this.iconValue) {
       this.iconButton.style.backgroundImage = this.iconValue;
+    }
+    if (this.iconPending) {
+      this.iconButton.classList.add('pending');
     }
 
     var isIconPreview = !this.getScreenshotPreviewsSetting();
