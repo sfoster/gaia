@@ -264,7 +264,7 @@
   -moz-padding-start: 5.5rem;
 
   background-repeat: no-repeat;
-  background-position: 3rem center; 
+  background-position: 3rem center;
   background-size: 3rem;
 }
 
@@ -618,11 +618,16 @@ section.pin-dialog span {
 section.pin-dialog .origin {
   font-size: 1.2rem;
   color: #5D5D5D;
-  margin: 0;
   padding: 0;
   font-weight: 400;
   line-height: 0;
-  margin-top: -2rem;
+  margin: -2rem auto;
+  width: -moz-fit-content;
+}
+
+section.pin-dialog .origin .tld {
+  display: inline;
+  color: black;
 }
 
 section.pin-dialog.secure .origin::before {
@@ -633,7 +638,7 @@ section.pin-dialog.secure .origin::before {
   margin: 0;
   position: relative;
   top: 1rem;
-  left: 2.5rem;
+  left: -2.5rem;
   background-position: 3rem center;
   background-size: 3rem auto;
 }
