@@ -374,7 +374,7 @@
   };
 
   AppChrome.prototype.nextCard = function ac_nextCard() {
-    var cards = this.pinDialog.querySelectorAll('.card-container div');
+    var cards = this.pinDialog.querySelectorAll('.card-container > div');
     cards[0].classList.add('right');
     cards[1].classList.remove('left');
     this.pinButton.dataset.pin = 'site';
@@ -385,7 +385,7 @@
   };
 
   AppChrome.prototype.previousCard = function ac_previousCard() {
-    var cards = this.pinDialog.querySelectorAll('.card-container div');
+    var cards = this.pinDialog.querySelectorAll('.card-container > div');
     cards[0].classList.remove('right');
     cards[1].classList.add('left');
     this.pinButton.dataset.pin = 'page';
