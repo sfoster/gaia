@@ -7,7 +7,7 @@
 (function(exports) {
 
   var STORE_NAME = 'places';
-  var MAX_RESULTS = 10;
+  var MAX_RESULTS = 20;
   var container = document.getElementById('pages-container');
 
   function Places() {}
@@ -50,11 +50,19 @@
     }
   };
 
+  function isPinned(place) {
+    if (place.pinned) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   function showPages() {
     console.log('Showing pages.');
     var store = places.persistStore;
 
-    store.read('frecency', MAX_RESULTS, function(results) {
+    store.read('pinTime', MAX_RESULTS, function(results) {
       var docFragment = document.createDocumentFragment();
       results.forEach(function(x) {
         var card = new PinCard(x);
@@ -82,7 +90,7 @@
       });
       container.innerHTML = '';
       container.appendChild(docFragment);
-    });
+    }, isPinned);
   }
 
   var places = new Places();

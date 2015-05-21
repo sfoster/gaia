@@ -10,7 +10,7 @@
   'use strict';
 
   var DB_NAME = 'places_idb_store';
-  var DB_VERSION = 2;
+  var DB_VERSION = 3;
 
   var PLACES_STORE = 'places';
   var VISITS_STORE = 'visits';
@@ -40,6 +40,7 @@
 
     upgradeSchema: function (e) {
       var db = e.target.result;
+      var transaction = e.target.transaction;
       var fromVersion = e.oldVersion;
       if (fromVersion < 1) {
         var places = db.createObjectStore(PLACES_STORE, { keyPath: 'url' });
@@ -51,6 +52,11 @@
         asyncStorage.removeItem('latest-revision');
         var visits = db.createObjectStore(VISITS_STORE, { keyPath: 'date' });
         visits.createIndex('date', 'date', { unique: true });
+      }
+
+      if (fromVersion < 3) {
+        var places3 = transaction.objectStore('places');
+        places3.createIndex('pinTime', 'pinTime', { unique: false });
       }
     },
 
