@@ -52,6 +52,9 @@
   line-height: 1.6rem;
   height: 1.6rem;
 }
+.pin-card.no-content header {
+  height: 7.6rem;
+}
 
 .pin-card p {
   height: 6rem;
