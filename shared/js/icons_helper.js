@@ -24,7 +24,7 @@
 
   function getIcon(uri, iconSize, placeObj = {}, siteObj = {}) {
     var iconUrl;
-
+    iconSize = iconSize * window.devicePixelRatio;
     if (siteObj.manifestUrl && siteObj.manifest) {
       iconUrl = getWebManifestBestIcon(siteObj, iconSize);
       console.log('Tried to get icon URL from manifest, got ' + iconUrl);
