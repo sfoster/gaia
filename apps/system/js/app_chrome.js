@@ -1097,7 +1097,8 @@
     if (!tld) {
       tld = document.createElement('span');
       tld.className = 'tld';
-      originElement.appendChild(tld);
+    } else {
+      tld.remove();
     }
     tld.textContent = origin.slice(origin.length - 2, origin.length).join('.');
 
@@ -1106,6 +1107,7 @@
       originElement.textContent =  subdomains + '.';
     }
 
+    originElement.appendChild(tld);
     this.setPinDialogCard();
     this.previousCard();
   };
