@@ -37,6 +37,9 @@
     if (!data.linkedData.type) {
       return '';
     }
+    if (data.linkedData.type == 'pinterestapp:pin') {
+      return 'photo';
+    }
     return data.linkedData.type.split(':').pop();
   }
 
