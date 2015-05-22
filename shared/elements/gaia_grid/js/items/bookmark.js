@@ -2,11 +2,13 @@
 /* global GaiaGrid */
 /* global GridIconRenderer */
 /* global MozActivity */
+/* global IconsHelper */
 /* jshint nonew: false */
 
 (function(exports) {
 
   const TYPE = 'bookmark';
+  const ICON_SIZE = 128;
 
   /**
    * Represents a single bookmark icon on the homepage.
@@ -74,15 +76,36 @@
       return this.features && this.features.isDraggable !== false;
     },
 
+    getBestIcon: function() {
+      return new Promise((function(resolve, reject) {
+        var placeObj = {
+          'url': this.detail.pinnedFrom,
+          'icons': this.detail.pinnedFromIcons
+        };
+        IconsHelper.getIcon(this.detail.url, ICON_SIZE,
+          placeObj, this.detail).then((function(icon) {
+            this.detail.icon = URL.createObjectURL(icon.blob);
+            resolve();
+        }).bind(this)).catch(function(error) {
+          console.error('Failed to get best icon for site ' + error);
+          reject();
+        });
+      }).bind(this));
+    },
+
     /**
      * This method overrides the GridItem.render function.
      */
     render: function() {
-      GaiaGrid.GridItem.prototype.render.call(this);
-      this.element.classList.add('bookmark');
-      if (this.isEditable()) {
-        this.element.classList.add('editable');
-      }
+      this.getBestIcon().then((function() {
+        GaiaGrid.GridItem.prototype.render.call(this);
+        this.element.classList.add('bookmark');
+        if (this.isEditable()) {
+          this.element.classList.add('editable');
+        }
+      }).bind(this), function(error) {
+        console.error('Failed to get site icon to render ' + error);
+      });
     },
 
     /**
