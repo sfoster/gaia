@@ -378,6 +378,9 @@
 
   AppChrome.prototype.getPageType = function ac_getPageType() {
     var place = this.currentPlace;
+    if (place.linkedData.type == 'pinterestapp:pin') {
+      return 'Photo';
+    }
     if (place.linkedData.type) {
       var pageType = place.linkedData.type.split(':').pop();
       return pageType[0].toUpperCase() + pageType.slice(1);
