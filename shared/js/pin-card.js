@@ -33,6 +33,13 @@
     }
   }
 
+  function getType(data) {
+    if (!data.linkedData.type) {
+      return '';
+    }
+    return data.linkedData.type.split(':').pop();
+  }
+
   function getBrightness(color) {
     var colorCodes = /rgb\((\d+), (\d+), (\d+)\)/.exec(color);
     if (!colorCodes || colorCodes.length === 0) {
@@ -49,6 +56,11 @@
     var container = document.createElement('div');
     container.classList.add('pin-card');
 
+    var type = getType(cardData);
+    if (type) {
+      container.classList.add(type);
+    }
+
     var background = document.createElement('div');
     background.className = 'background';
     background.style.backgroundColor = cardData.themeColor || 'white';
@@ -62,6 +74,7 @@
 
     var header = document.createElement('header');
     var content = document.createElement('p');
+    content.className = 'description';
     header.textContent = getTitle(cardData);
     content.textContent = getDescription(cardData);
     if (!content.textContent) {
