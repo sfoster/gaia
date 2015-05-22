@@ -30,6 +30,12 @@
   left: 0;
 }
 
+.pin-card.video .background,
+.pin-card.photo .background,
+.pin-card.recipe .background {
+  display: none;
+}
+
 .pin-card img {
   position: absolute;
   top: -1.5rem;
@@ -52,17 +58,49 @@
   line-height: 1.6rem;
   height: 1.6rem;
 }
+
+.pin-card.recipe header {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 2px;
+  height: unset;
+  max-height: 8rem;
+}
+
 .pin-card.no-content header {
   height: 7.6rem;
 }
 
-.pin-card p {
+.pin-card.video header {
+  top: 8rem;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 3px;
+  color: #fff;
+}
+
+.pin-card.photo header {
+  display: none;
+}
+
+.pin-card p.description {
   height: 6rem;
   position: absolute;
   top: 4rem;
   font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.2rem;
   padding: 0 .7rem;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #000;
+}
+
+.pin-card.light p.description {
+  color: #fff;
+}
+
+.pin-card.video p,
+.pin-card.photo p,
+.pin-card.recipe p {
+  display: none;
 }

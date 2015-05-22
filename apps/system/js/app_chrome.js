@@ -369,8 +369,20 @@
     if (!this.isMaximized()) {
       return;
     }
-    this.populatePinDialog();
-    this.pinDialog.classList.remove('hidden');
+    window.places.getPlace(this.app.config.url).then(function(place) {
+      this.currentPlace = place;
+      this.populatePinDialog();
+      this.pinDialog.classList.remove('hidden');
+    }.bind(this));
+  };
+
+  AppChrome.prototype.getPageType = function ac_getPageType() {
+    var place = this.currentPlace;
+    if (place.linkedData.type) {
+      var pageType = place.linkedData.type.split(':').pop();
+      return pageType[0].toUpperCase() + pageType.slice(1);
+    }
+    return 'Page';
   };
 
   AppChrome.prototype.nextCard = function ac_nextCard() {
@@ -389,7 +401,8 @@
     cards[0].classList.remove('right');
     cards[1].classList.add('left');
     this.pinButton.dataset.pin = 'page';
-    this.pinDialog.querySelector('header h2').textContent = 'Pin Page';
+    this.pinDialog.querySelector('header h2').textContent =
+      'Pin ' + this.getPageType();
     this.nextPin.hidden = false;
     this.previousPin.hidden = true;
   };
@@ -841,8 +854,6 @@
 
     this.previousOrigin = origin;
 
-    this.populatePinDialog();
-
     if (!this.app.isBrowser()) {
       return;
     }
@@ -898,6 +909,7 @@
 
   AppChrome.prototype.checkForPinnedPage = function ac_checkForPinnedPage() {
     window.places.getPlace(this.app.config.url).then((function(place) {
+      this.currentPlace = place;
       if (place && place.pinned) {
         this.pin();
       } else {
@@ -1112,15 +1124,10 @@
     this.previousCard();
   };
 
-  AppChrome.prototype.setPinDialogCard = function ac_setPinDialogCard(url) {
+  AppChrome.prototype.setPinDialogCard = function ac_setPinDialogCard() {
     var currentIcon = window.getComputedStyle(this.siteIcon).backgroundImage;
     currentIcon = currentIcon.replace('url("', '').replace('")', '');
-    var info = {
-      url: this.app.config.url,
-      title: this.app.title,
-      icons: JSON.parse('{"' + currentIcon +'":{"sizes":[]}}')
-    };
-    var card = new PinCard(info);
+    var card = new PinCard(this.currentPlace);
     var container = this.pinDialog.querySelector('.card-container');
     container.innerHTML = '';
     container.appendChild(card.element);

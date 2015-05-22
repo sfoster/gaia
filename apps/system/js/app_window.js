@@ -1062,6 +1062,7 @@
     function aw__handle_mozbrowserlocationchange(evt) {
       this.favicons = {};
       this.webManifestURL = null;
+      this.linkedData = null;
       this.config.url = evt.detail;
       this.title = evt.detail;
       this.name = UrlHelper.getHostname(evt.detail);
