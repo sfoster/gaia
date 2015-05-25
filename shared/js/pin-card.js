@@ -34,7 +34,7 @@
   }
 
   function getType(data) {
-    if (!data.linkedData.type) {
+    if (!data.linkedData.type || data.linkedData.type == 'website') {
       return '';
     }
     if (data.linkedData.type == 'pinterestapp:pin') {

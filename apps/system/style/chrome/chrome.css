@@ -625,6 +625,10 @@ section.pin-dialog .origin {
   width: -moz-fit-content;
 }
 
+section.pin-dialog:not(.secure) .origin {
+  margin: 0 auto;
+}
+
 section.pin-dialog .origin .tld {
   display: inline;
   color: black;
