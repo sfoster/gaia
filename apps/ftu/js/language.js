@@ -42,8 +42,9 @@ var LanguageManager = {
   },
 
   buildLanguageList: function settings_buildLanguageList() {
-    var container = document.querySelector('#languages ul');
-    container.innerHTML = '';
+    var listContainer = document.querySelector('#languages ul');
+    listContainer.innerHTML = '';
+    var container = document.createDocumentFragment();
     LanguageList.get(function fillLanguageList(allLanguages, currentLanguage) {
       for (var lang in allLanguages) {
         var label = document.createElement('label');
@@ -67,6 +68,10 @@ var LanguageManager = {
         li.appendChild(radio);
         container.appendChild(li);
       }
+      // wait a tick before injecting all the items into DOM
+      window.requestAnimationFrame(() => {
+        listContainer.appendChild(container);
+      });
     });
   }
 };

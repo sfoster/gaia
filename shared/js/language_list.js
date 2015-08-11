@@ -9,6 +9,19 @@
 (function(exports) {
 
 var LOCALES_FILE = '/shared/resources/languages.json';
+var _settingsLock = null;
+
+function getSettingsLock() {
+  // If there is a lock present we return that
+  if (_settingsLock && !_settingsLock.closed) {
+    return _settingsLock;
+  }
+
+  // If there isn't we return one.
+  var settings = window.navigator.mozSettings;
+
+  return (_settingsLock = settings.createLock());
+}
 
 function readFile(file, callback) {
   return new Promise(function(resolve, reject) {
@@ -38,7 +51,7 @@ function readSetting(name, callback) {
     return callback(null);
   }
 
-  return settings.createLock().get(name).then(function(res) {
+  return getSettingsLock().get(name).then(function(res) {
     return res[name];
   }, onError.bind(null, name));
 }
