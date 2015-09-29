@@ -15,6 +15,8 @@ var LanguageManager = {
       });
     window.addEventListener('localized',
       this.localizedEventListener.bind(this));
+    this.settings.addObserver('accessibility.screenreader',
+      this.buildLanguageList.bind(this));
   },
 
   handleEvent: function handleEvent(evt) {

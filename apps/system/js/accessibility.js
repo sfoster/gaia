@@ -1,5 +1,5 @@
 'use strict';
-/* global SettingsListener, LazyLoader, Service */
+/* global SettingsListener, LazyLoader, Service, SettingsHelper */
 /* global AccessibilityQuicknavMenu */
 
 (function(exports) {
@@ -51,6 +51,13 @@
     HINTS_TIMEOUT: 2000,
 
     /**
+     * If the current language is not supported by any synthesis voice, fall
+     * back to this language.
+     **/
+
+    FALLBACK_LANGUAGE: 'en-US',
+
+    /**
      * Current counter for button presses in short succession.
      * @type {Number}
      * @memberof Accessibility.prototype
@@ -85,6 +92,7 @@
       'accessibility.screenreader-rate': 0,
       'accessibility.screenreader-captions': false,
       'accessibility.screenreader-shade': false,
+      'accessibility.screenreader-fallback-lang': 'en-US',
       'accessibility.colors.enable': false,
       'accessibility.colors.invert': false,
       'accessibility.colors.grayscale': false,
@@ -145,6 +153,7 @@
                   SettingsListener.getSettingsLock().set({
                     'accessibility.screenreader-show-settings': true
                   });
+                  this.setToSupportedLanguage();
                 }
                 if (this.settings['accessibility.screenreader-shade']) {
                   this.toggleShade(aValue, !aValue);
@@ -227,6 +236,19 @@
         this.speak({ string: aEnable ? 'shadeToggleOn' : 'shadeToggleOff' },
           null, {enqueue: true});
       }
+    },
+
+    setToSupportedLanguage: function ar_setToSupportedLanguage() {
+      var settingsHelper = SettingsHelper('language.current');
+      var voices = this.speechSynthesizer.speech.getVoices();
+      var speechLangs = new Set([for (v of voices) v.lang.split('-')[0]]);
+
+      settingsHelper.get((value) => {
+        if (!speechLangs.has(value.split('-')[0])) {
+          settingsHelper.set(
+            this.settings['accessibility.screenreader-fallback-lang']);
+        }
+      });
     },
 
     /**
