@@ -10,6 +10,8 @@
    *       from that number only
   */
   var loadTasks = [];
+  // Telephony object
+  var tel = navigator.mozTelephony;
 
   var App = function() {};
   App.prototype = {
@@ -18,17 +20,28 @@
         return this.started();
       });
     },
+    testMode: 'emoji',
     started: function() {
       if (this._started) {
         throw new Error('App: bootstrap should not be called twice.');
       }
       this._started = true;
 
-      return new Promise(function(res, rej) {
+      var startedTasks = [new Promise((res, rej) => {
+        document.body.dataset.testmode = this.testMode;
         document.body.dataset.ready = 'ready';
         console.log('bootstrapped, app is started');
+        console.log('Telephone object: ', tel);
         res(true);
-      });
+      })];
+
+      if (this.testMode == 'call') {
+        this.testPanel = new exports.CallTest();
+      } else if(this.testMode == 'emoji') {
+        this.testPanel = new exports.EmojiTest();
+      }
+      startedTasks.push(this.testPanel.start());
+      return ;
     }
   };
 

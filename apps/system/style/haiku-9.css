@@ -55,3 +55,19 @@ h1 {
 body:not([data-ready="ready"]) .btn {
   opacity: 0.1;
 }
+
+body[data-testmode="emoji"] #panel_call {
+  display: none;
+}
+
+body[data-testmode="emoji"] #panel_emoji {
+  display: block;
+}
+
+body[data-testmode="call"] #panel_call {
+  display: block;
+}
+
+body[data-testmode="call"] #panel_emoji {
+  display: none;
+}
