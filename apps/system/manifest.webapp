@@ -19,6 +19,7 @@
     "mobileconnection": {},
     "bluetooth": {},
     "telephony": {},
+    "phonenumberservice": {},
     "sms": {},
     "voicemail": {},
     "device-storage:sdcard": { "access": "readwrite" },
