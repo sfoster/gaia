@@ -6,6 +6,12 @@
   // Telephony object
   var tel = navigator.mozTelephony;
 
+  var isValid = function t_isValid(sanitizedNumber) {
+    var validExp = /^(?!,)([0-9#+*,]){1,50}$/;
+    return validExp.test(sanitizedNumber);
+  };
+
+
   var CallTest = function() {};
   CallTest.prototype = {
     start: function() {
@@ -13,9 +19,8 @@
         console.log('CallTest starting');
         // hook up listeners etc
         tel.muted = false;
-        tel.speakerEnabled = true;
-
-
+        // tel.speakerEnabled = true;
+        tel.onincoming = this.handleIncomingCall.bind(this);
         res(true);
       });
     },
@@ -31,8 +36,19 @@
         console.warn('no pair number configured');
         return;
       }
+      var sanitizedNumber = telNumber.replace(/(\s|-|\.|\(|\))/g, '');
+      if (!isValid(sanitizedNumber)) {
+        console.warn('Invalid number: ', sanitizedNumber);
+        return;
+      }
       // Place a call
-      var call = tel.dial(telNumber).then(function(call) {
+      /* TODO:
+          * only ring n times
+          * loop some ringing audio while connecting
+
+      */
+      console.log('dialing: ', sanitizedNumber);
+      var call = tel.dial(sanitizedNumber).then(function(call) {
         // Events for that call
         call.onstatechange = function (event) {
             /*
@@ -40,7 +56,7 @@
                 "dialing", "ringing", "busy", "connecting", "connected",
                 "disconnecting", "disconnected", "incoming"
             */
-            console.log('call state change', event.state);
+            console.log('call state change', event.state, call);
         };
 
         // Above options as direct events
