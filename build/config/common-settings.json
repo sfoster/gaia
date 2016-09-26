@@ -100,6 +100,8 @@
    "geolocation.enabled": true,
    "geolocation.suspended": false,
    "gfx.layerscope.enabled": false,
+   "haiku.testmode": "emoji",
+   "haiku.pair.number": "99912345678",
    "hud.hide": true,
    "hud.logging": true,
    "hud.warnings": true,

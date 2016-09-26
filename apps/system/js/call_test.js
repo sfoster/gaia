@@ -75,16 +75,22 @@
     },
     handleIncomingCall: function(event) {
       var call = event.call;
-      var app = window.app;
       console.log('incoming call from: '+ call.id);
-      console.log('is expected call from the paired number? ',
-                  call.id === app.pairNumber, call.id, app.pairNumber);
+
+      if (!this.shouldAcceptCall(call)) {
+        console.log('Hanging up incoming call from: ' + call.id.number);
+        return;
+      }
 
       call.answer();
       setTimeout(() => {
         console.log('times up, hanging up from this call');
         call.hangUp();
       }, 1000);
+    },
+    shouldAcceptCall: function(call) {
+      var incomingNum = call.id && call.id.number;
+      return incomingNum === window.app.pairNumber;
     }
   };
   exports.CallTest = CallTest;

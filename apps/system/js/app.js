@@ -241,13 +241,9 @@
     handleHeadphonesChange: function mpw_handleHeadphonesChange(event) {
       this.handleAudioRouteChange(event, 'wired');
     },
-  // Because currently the mozAudioChannelManager does not provide any api for
-  // querying the active headphones/headset(audio routing), so to fit the ux
-  // requirement, we have to monitor the wired headphones and bluetooth headset
-  // statuses in system, then decide if we want to pause the music player after
-  // one of the headphones/headset is disconnected.
-  // We should move this logic back to shared/js/media/remote_controls.js since
-  // the remote logics should be handled in remote controls module.
+    // Because currently the mozAudioChannelManager does not provide any api
+    // for querying the active headphones/headset(audio routing), we have
+    // to monitor aux (wired headphones/external speaker)
     handleAudioRouteChange: function mpw_handleAudioRouteChange(event, reason) {
       var isWiredHeadphonesConnected = false;
       var isBluetoothHeadsetConnected = false;
