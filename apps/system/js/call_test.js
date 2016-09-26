@@ -15,33 +15,12 @@
         tel.muted = false;
         tel.speakerEnabled = true;
 
-        tel.ready.then(this.onTelephonyReady.bind(this), (err) => {
-          console.warn('Telephony error:', err.message);
-        });
 
         res(true);
       });
     },
     stop: function() {
       // unhook listeners etc
-    },
-    onTelephonyReady: function(result) {
-      var req = navigator.mozMobileConnections[0].selectNetworkAutomatically();
-
-      req.onsuccess = () => {
-        console.log('network selected');
-      };
-      req.onerror = () => {
-         console.log('Unable to switch: ' + req.error.name, req);
-      };
-      console.log('Telephony is ready');
-      tel.onincoming = this.handleIncomingCall.bind(this);
-
-      if (navigator && navigator.mozCellBroadcast) {
-        navigator.mozCellBroadcast.onreceived = function() {
-          console.log('mozCellBroadcast received: ', event.message);
-        };
-      }
     },
 
     initiateCall: function() {
