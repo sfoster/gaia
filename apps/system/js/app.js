@@ -53,7 +53,7 @@
 
       console.log('starting in testMode: ', this.testMode);
       if (this.testMode == 'call') {
-        this.testPanel = new exports.CallTest();
+        this.testPanel = new exports.CallPanel();
       } else if(this.testMode == 'emoji') {
         this.testPanel = new exports.EmojiTest();
       } else {
@@ -162,22 +162,22 @@
     },
 
     onDataChange: function(evt) {
-      console.log('datachange event: ', this._conn.voice);
-      window.dispatchEvent(new CustomEvent('connection-datachange'), {
+      // console.log('datachange event: ', this._conn.voice);
+      window.dispatchEvent(new CustomEvent('connection-datachange', {
         detail: {
           connected: this._conn.data.connected,
           signal: this._conn.data.signalStrength || 0
         }
-      });
+      }));
     },
     onVoiceChange: function(evt) {
-      console.log('voicechange event: ', this._conn.voice);
-      window.dispatchEvent(new CustomEvent('connection-voicechange'), {
+      // console.log('voicechange event: ', this._conn.voice);
+      window.dispatchEvent(new CustomEvent('connection-voicechange', {
         detail: {
           connected: this._conn.voice.connected,
-          signal: this._conn.voice.signalStrength || 0
+          signal: this._conn.voice.relSignalStrength || 0
         }
-      });
+      }));
     },
     /**
      * Returns the default preferred network types based on the hardware

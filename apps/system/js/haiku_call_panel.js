@@ -11,16 +11,40 @@
     return validExp.test(sanitizedNumber);
   };
 
-
-  var CallTest = function() {};
-  CallTest.prototype = {
+  var CallPanel = function() {};
+  CallPanel.prototype = {
+    callState: 'offline',
     start: function() {
       return new Promise((res, rej) => {
-        console.log('CallTest starting');
+        console.log('CallPanel starting');
         // hook up listeners etc
         tel.muted = false;
         // tel.speakerEnabled = true;
         tel.onincoming = this.handleIncomingCall.bind(this);
+
+        // start UI
+        this.callButton = new exports.CallButton(this, window.app);
+        this.callButton.start();
+
+        this.statusNode = document.querySelector('#status');
+
+        window.addEventListener('connection-voicechange', (evt) => {
+          var voiceConnected = evt.detail.connected;
+          this.statusNode.textContent = (voiceConnected) ?
+            evt.detail.signal + '%' : 'offline';
+
+          if (voiceConnected && this.callState === 'offline') {
+            // network connected, calls possible but none connected
+            this.callState = 'disconnected';
+            this.callButton.changeState(this.callState);
+            console.log('voice connected, waiting for calls: ', evt);
+          } else if (this.callState !== 'offline' && !voiceConnected) {
+            this.callState = 'offline';
+            this.callButton.changeState(this.callState);
+            console.log('voice disconnected, now offline: ', evt);
+          }
+        });
+
         res(true);
       });
     },
@@ -29,7 +53,6 @@
     },
 
     initiateCall: function() {
-      this._callInProgress = true;
       var app = window.app;
       var telNumber = app.pairNumber;
       if (!telNumber) {
@@ -48,7 +71,8 @@
 
       */
       console.log('dialing: ', sanitizedNumber);
-      var call = tel.dial(sanitizedNumber).then(function(call) {
+      var call = this._callInProgress = tel.dial(sanitizedNumber)
+      .then(function(call) {
         // Events for that call
         call.onstatechange = function (event) {
             /*
@@ -59,7 +83,7 @@
             console.log('call state change', event.state, call);
         };
 
-        // Above options as direct events
+        // Above optionsiKknownCaller direct events
         call.onconnected = function () {
             // Call was connected
             console.log('call connected');
@@ -77,21 +101,36 @@
       var call = event.call;
       console.log('incoming call from: '+ call.id);
 
-      if (!this.shouldAcceptCall(call)) {
+      if (this.isKnownCaller(call)) {
+        this._callInProgress = call;
+      } else {
         console.log('Hanging up incoming call from: ' + call.id.number);
         return;
       }
 
+      // TODO: announce new call
       call.answer();
       setTimeout(() => {
         console.log('times up, hanging up from this call');
         call.hangUp();
       }, 1000);
     },
-    shouldAcceptCall: function(call) {
+    acceptIncomingCall: function() {
+      if (this._callInProgress) {
+        console.log('acceptIncomingCall');
+        this._callInProgress.answer();
+      }
+    },
+    isKnownCaller: function(call) {
       var incomingNum = call.id && call.id.number;
       return incomingNum === window.app.pairNumber;
+    },
+    hangupCurrentCall: function() {
+      if (this._callInProgress) {
+        console.log('hangupCurrentCall');
+        this._callInProgress.hangUp();
+      }
     }
   };
-  exports.CallTest = CallTest;
+  exports.CallPanel = CallPanel;
 })(window);

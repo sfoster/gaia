@@ -71,3 +71,60 @@ body[data-testmode="call"] #panel_call {
 body[data-testmode="call"] #panel_emoji {
   display: none;
 }
+
+/* Call button states */
+#call_btn {
+  height: 8rem;
+  width: 8rem;
+  border-radius: 4rem;
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+#call_btn.offline {
+  background-color: #999;
+  color: #ccc;
+}
+#call_btn.offline:after {
+  content: 'offline';
+}
+
+#call_btn.connected {
+  background-color: #999;
+  color: #ccc;
+}
+#call_btn.connected:after {
+  content: 'hang up';
+}
+#call_btn.disconnected {
+  background-color: #6f6;
+  color: #000;
+}
+#call_btn.disconnected:after {
+  content: 'call';
+}
+#call_btn.dialing {
+  background-color: #ff9;
+  color: #000;
+}
+#call_btn.dialing:after {
+  content: 'dialing...';
+}
+#call_btn.incoming {
+  background-color: #99f;
+  color: #000;
+}
+#call_btn.incoming:after {
+  content: 'incoming...';
+}
+
+#status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  background-color: #000;
+  color: #eee;
+  text-align: right;
+  padding: 0 1rem;
+}
