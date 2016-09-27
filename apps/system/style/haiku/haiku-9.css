@@ -25,7 +25,7 @@ body {
   background: #ffffff;
 }
 
-#middle {
+#middle, #received-section {
   /*outline: 1px solid orange;*/
   display: flex;
   flex-direction: row;
@@ -124,15 +124,15 @@ body[data-testmode="call"] #panel_emoji {
 Emoji Panel Styles
 */
 
-.icon-left {
+.left {
   background: url('images/icon-rainbow.png') no-repeat;
 }
 
-.icon-middle {
+.middle {
   background: url('images/icon-rose.png') no-repeat;
  }
 
-.icon-right {
+.right {
   background: url('images/icon-rainbow.png') no-repeat;
 }
 
@@ -145,9 +145,14 @@ Emoji Panel Styles
   width: 100%;
 }
 
-#emoji-icons > div, #received-section > div {
+#emoji-icons > div {
   height: 14rem;
   width: 28rem;
+}
+
+#received-section > div {
+  height: 14rem;
+  width: 12rem;
 }
 
 #status-log {
@@ -156,6 +161,10 @@ Emoji Panel Styles
 
 #received-section {
   display:none;
+}
+
+.icon:active {
+  transform: translateY(8px);
 }
 
 

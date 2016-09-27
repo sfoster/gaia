@@ -65,7 +65,7 @@
       if (this.testMode == 'call') {
         this.testPanel = new exports.CallPanel();
       } else if(this.testMode == 'emoji') {
-        this.testPanel = new exports.EmojiTest();
+        this.testPanel = new exports.EmojiPanel();
       } else {
         throw new Error('Unexpected testMode: ' + this.testMode);
       }
