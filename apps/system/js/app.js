@@ -32,12 +32,22 @@
       }
       this.audioRouting = 'speaker';
 
+      this.startUI();
+
       return Promise.all(loadTasks).then(() => {
         return this.started();
       });
     },
     testMode: 'emoji',
     pairNumber: '',
+    startUI: function() {
+      this.rebootBtn = document.querySelector('#reboot');
+      this.rebootBtn.addEventListener('click', function(evt) {
+        console.log('rebooting');
+        var power = navigator.mozPower;
+        power.reboot();
+      });
+    },
     started: function() {
       if (this._started) {
         throw new Error('App: bootstrap should not be called twice.');
