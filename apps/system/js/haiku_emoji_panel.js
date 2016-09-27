@@ -89,7 +89,7 @@
       console.log('Haiku: Message body', message.body);
 
       logStatus.innerText = "You just received emoji " + message.body + "...";
-
+      receivedEmoji.classList.remove("left", "middle", "right");
       if (message.body == 'left' ||
           message.body == 'middle' ||
           message.body == 'right') {
