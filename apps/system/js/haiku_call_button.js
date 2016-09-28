@@ -24,22 +24,18 @@
         case 'dialing':
           // cancel outgoing call
           this.panel.hangupCurrentCall();
-          this.changeState('disconnected');
           break;
         case 'incoming':
           // pickup incoming call
           this.panel.acceptIncomingCall();
-          this.changeState('connected');
           break;
         case 'connected':
           // hangup current call
           this.panel.hangupCurrentCall();
-          this.changeState('disconnected');
           break;
         default:
           // includes case 'disconnected':
           this.panel.initiateCall();
-          this.changeState('dialing');
           break;
       }
     },

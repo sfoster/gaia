@@ -199,7 +199,7 @@ body > footer {
   margin: 0 1rem;
   width: 2.5rem;
   height: 2.5rem;
-  background: #999 url('sleep_menu/images/power-off.png') no-repeat;
+  background: #999 url('../sleep_menu/images/power-off.png') no-repeat;
   background-size: contain;
   border-radius: 1.25rem;
 }
