@@ -40,6 +40,7 @@
     },
     testMode: 'emoji',
     pairNumber: '',
+
     startUI: function() {
       this.rebootBtn = document.querySelector('#reboot');
       this.rebootBtn.addEventListener('click', function(evt) {
@@ -47,6 +48,22 @@
         var power = navigator.mozPower;
         power.reboot();
       });
+
+      this.containerNode = document.querySelector('#panels');
+      this.containerNode.addEventListener('click', (event) => {
+        // intercept clicks if there are pending received messages
+        var emojiPanel = this.emojiPanel;
+        var callPanel = this.callPanel;
+
+        if (emojiPanel && emojiPanel.receivedMessages.length) {
+          event.preventDefault();
+          event.stopPropagation();
+          emojiPanel.clearReceivedMessages();
+        }
+        if (callPanel && callPanel.missedCalls.length) {
+          callPanel.clearMissedCalls();
+        }
+      }, true);
     },
     started: function() {
       if (this._started) {
@@ -62,15 +79,14 @@
       })];
 
       console.log('starting in testMode: ', this.testMode);
-      if (this.testMode == 'call') {
-        this.testPanel = new exports.CallPanel();
-      } else if(this.testMode == 'emoji') {
-        this.testPanel = new exports.EmojiPanel();
-      } else {
-        throw new Error('Unexpected testMode: ' + this.testMode);
+      if (this.testMode !== 'call') {
+        this.emojiPanel = new exports.EmojiPanel();
+        startedTasks.push(this.emojiPanel.start());
       }
-      startedTasks.push(this.testPanel.start());
-      return ;
+      if(this.testMode !== 'emoji') {
+        this.callPanel = new exports.CallPanel();
+        startedTasks.push(this.callPanel.start());
+      }
     },
     _updateSetting: function(key, value) {
       if (typeof value !== 'undefined') {

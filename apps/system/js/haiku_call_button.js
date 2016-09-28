@@ -4,14 +4,15 @@
 */
 (function(exports) {
 
-  var CallButton = function(panel, app) {
+  var CallButton = function(node, panel, app) {
     this.panel = panel;
     this.app = app;
+    this.domNode = node;
   };
   CallButton.prototype = {
     start: function() {
-      this.btnNode = document.querySelector('#buttons .btn');
-      this.btnNode.addEventListener('click', this.onClick.bind(this));
+      this.domNode = document.querySelector('#buttons .btn');
+      this.domNode.addEventListener('click', this.onClick.bind(this));
     },
     stop: function() {
       // unhook listeners etc
@@ -40,10 +41,10 @@
       }
     },
     changeState: function(toState) {
-      this.btnNode.classList.remove(
+      this.domNode.classList.remove(
         'offline', 'connected', 'disconnected', 'dialing', 'incoming'
       );
-      this.btnNode.classList.add(toState);
+      this.domNode.classList.add(toState);
     }
 
   };

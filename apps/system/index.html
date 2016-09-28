@@ -6,30 +6,27 @@
   <link rel="stylesheet" type="text/css" href="style/haiku/haiku-9.css">
 </head>
 <body>
-
-  <section id="panel_call">
-    <section id="buttons">
-      <button class="btn offline" id="call_btn"></button>
+  <section id="panels">
+    <section id="panel_emoji" class="panel">
+      <section id="emoji-icons">
+        <div class="icon left" data-icon="left" id="emoji_left"></div>
+        <div class="icon middle" data-icon="middle" id="emoji_middle"></div>
+        <div class="icon right" data-icon="right" id="emoji_right"></div>
+      </section>
+      <section id="middle">
+        <div id="status-log">Touch to send</div>
+      </section>
     </section>
-    <section id="middle">
-      <div id="call-status-log">Touch to Call</div>
-    </section>
-
-  </section>
-
-  <section id="panel_emoji">
-    <section id="emoji-icons">
-      <div class="icon left" data-icon="left" id="emoji_left"></div>
-      <div class="icon middle" data-icon="middle" id="emoji_middle"></div>
-      <div class="icon right" data-icon="right" id="emoji_right"></div>
-    </section>
-    <section id="received-section">
-      <div id="received-emoji"></div>
-    </section>
-    <section id="middle">
-      <div id="status-log">Touch to send</div>
+    <section id="panel_call" class="panel">
+      <section id="buttons">
+        <div class="btn offline" id="call_btn"></div>
+      </section>
+      <section id="middle">
+        <div id="call-status-log">Touch to Call</div>
+      </section>
     </section>
   </section>
+
   <footer>
     <div id="status"></div>
     <div id="reboot"></div>

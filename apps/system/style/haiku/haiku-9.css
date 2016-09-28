@@ -23,36 +23,44 @@ body {
   flex-direction: column;
   justify-content: center;
   background: #ffffff;
+
+  font-size: 1.5rem;
 }
 
-#middle, #received-section {
-  /*outline: 1px solid orange;*/
+#panels {
+  height: calc(100% - 3rem);
   display: flex;
   flex-direction: row;
-  flex-grow: 10;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
+  position: relative;
+}
+
+#middle {
+  position: absolute;
+  z-index: 1;
   width: 100%;
+  height: 15%;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
 }
 
 h1 {
   text-align: center;
 }
 
-#buttons {
-  min-height: 15%;
-  /*outline: 1px solid green;*/
-  display: flex;
-  flex-grow: 1;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-#buttons > button {
-  height: 5rem;
-  margin: 1rem;
-  width: 10rem;
+.btn {
+  height: 12rem;
+  width: 12rem;
   font-size: 1.5rem;
+  box-sizing: border-box;
+  border-radius: 6rem;
+  box-shadow: 0 6px 9px 1px rgba(0, 0, 0, 0.6);
 }
 
 body:not([data-ready="ready"]) .btn {
@@ -75,54 +83,52 @@ body[data-testmode="call"] #panel_emoji {
   display: none;
 }
 
-/* Call button states */
-#call_btn {
-  height: 8rem;
-  width: 8rem;
-  border-radius: 4rem;
-  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+#panel_call {
+  flex: 1 1 33%;
 }
 
+#buttons {
+  min-height: 50%;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Call button states */
 #call_btn.offline {
   background-color: #999;
   color: #ccc;
-}
-#call_btn.offline:after {
-  content: 'offline';
 }
 
 #call_btn.connected {
   background-color: #999;
   color: #ccc;
 }
-#call_btn.connected:after {
-  content: 'hang up';
-}
+
 #call_btn.disconnected {
   background-color: #6f6;
   color: #000;
 }
-#call_btn.disconnected:after {
-  content: 'call';
-}
+
 #call_btn.dialing {
   background-color: #ff9;
   color: #000;
 }
-#call_btn.dialing:after {
-  content: 'dialing...';
-}
+
 #call_btn.incoming {
   background-color: #99f;
   color: #000;
-}
-#call_btn.incoming:after {
-  content: 'incoming...';
 }
 
 /**
 Emoji Panel Styles
 */
+
+#panel_emoji {
+  flex: 1 1 66%;
+}
 
 .left {
   background: url('images/icon-rainbow.png') no-repeat;
@@ -136,10 +142,10 @@ Emoji Panel Styles
   background: url('images/icon-rainbow.png') no-repeat;
 }
 
-#emoji-icons, #received-section  {
-  min-height: 15%;
+#emoji-icons  {
+  min-height: 50%;
   display: flex;
-  flex-grow: 1;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -147,20 +153,11 @@ Emoji Panel Styles
 
 #emoji-icons > div {
   height: 14rem;
-  width: 28rem;
+  width: 14rem;
 }
 
-#received-section > div {
-  height: 14rem;
-  width: 12rem;
-}
-
-#status-log {
-  font-size: 1.5rem;
-}
-
-#received-section {
-  display:none;
+#emoji-icons > .received {
+  outline: 4px dotted orange;
 }
 
 .icon:active {
@@ -170,15 +167,12 @@ Emoji Panel Styles
 
 @media (orientation: landscape) {
   #emoji-icons > div {
-    -moz-margin-start: 5rem;
+    -moz-margin-start: 0;
   }
 }
 
 body > footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex: 1 1 3rem;
   height: 3rem;
   background-color: #000;
   color: #eee;

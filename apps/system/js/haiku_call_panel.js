@@ -28,6 +28,7 @@
     start: function() {
       return new Promise((res, rej) => {
         console.log('CallPanel starting');
+        this.missedCalls = [];
         // hook up listeners etc
         tel.muted = false;
         // tel.speakerEnabled = true;
@@ -35,31 +36,35 @@
 
         // start UI
         this.panelNode = document.querySelector('#panel_call');
-        this.callButton = new exports.CallButton(this, window.app);
+        this.callButton = new exports.CallButton(
+            this.panelNode.querySelector('.btn'), this, window.app);
         this.callButton.start();
 
         this.statusNode = document.querySelector('#status');
 
-        window.addEventListener('connection-voicechange', (evt) => {
-          var voiceConnected = evt.detail.connected;
-          this.statusNode.textContent = (voiceConnected) ?
-            evt.detail.signal + '%' : 'offline';
-
-          if (voiceConnected && this.callState === 'offline') {
-            // network connected, calls possible but none connected
-            this.changeState('disconnected');
-            console.log('voice connected, waiting for calls: ', evt);
-          } else if (this.callState !== 'offline' && !voiceConnected) {
-            this.changeState('offline');
-            console.log('voice disconnected, now offline: ', evt);
-          }
-        });
+        this.registerHandlers();
         this.changeState('offline');
         res(true);
       });
     },
     stop: function() {
       // unhook listeners etc
+    },
+    registerHandlers: function() {
+      window.addEventListener('connection-voicechange', (evt) => {
+        var voiceConnected = evt.detail.connected;
+        this.statusNode.textContent = (voiceConnected) ?
+          evt.detail.signal + '%' : 'offline';
+
+        if (voiceConnected && this.callState === 'offline') {
+          // network connected, calls possible but none connected
+          this.changeState('disconnected');
+          console.log('voice connected, waiting for calls: ', evt);
+        } else if (this.callState !== 'offline' && !voiceConnected) {
+          this.changeState('offline');
+          console.log('voice disconnected, now offline: ', evt);
+        }
+      });
     },
     changeState: function(toState) {
       // state reflects current action. Action causes state change
@@ -191,6 +196,9 @@
     },
     updateLogStatus: function(msg) {
       document.querySelector('#call-status-log').textContent = msg;
+    },
+    clearMissedCalls: function() {
+      this.callButton.domNode.classList.remove('received');
     }
   };
   exports.CallPanel = CallPanel;
