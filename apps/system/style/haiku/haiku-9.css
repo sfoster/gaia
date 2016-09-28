@@ -63,6 +63,12 @@ h1 {
   box-shadow: 0 6px 9px 1px rgba(0, 0, 0, 0.6);
 }
 
+.received {
+  background-color: #70a300;
+  color: #fff;
+  display: flex !important;
+}
+
 body:not([data-ready="ready"]) .btn {
   opacity: 0.1;
 }
@@ -131,15 +137,15 @@ Emoji Panel Styles
 }
 
 .left {
-  background: url('images/icon-rainbow.png') no-repeat;
+  background: url('images/smiley.png') center no-repeat;
 }
 
 .middle {
-  background: url('images/icon-rose.png') no-repeat;
+  background: url('images/heart.png') center no-repeat;
  }
 
 .right {
-  background: url('images/icon-rainbow.png') no-repeat;
+  background: url('images/unicorn.png') center no-repeat;
 }
 
 #emoji-icons  {
@@ -156,8 +162,16 @@ Emoji Panel Styles
   width: 14rem;
 }
 
-#emoji-icons > .received {
-  outline: 4px dotted orange;
+#emoji-top-section {
+  display: none;
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  height: 15%;
+  top: 0;
+  padding-top: 4rem;
+  color: #fff;
+  justify-content: center;
 }
 
 .icon:active {
