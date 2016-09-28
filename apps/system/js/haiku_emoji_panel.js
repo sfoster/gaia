@@ -7,14 +7,20 @@
     this.receivedMessages = [];
   };
   var mozMessage = navigator.mozMobileMessage;
-  var logStatus = document.querySelector('#status-log');
+  var logStatus = document.querySelector('#emoji-status-bottom');
 
   var resetStatus = function() {
     // Reset Status text back to 'Touch to send' after 10 seconds
     setTimeout(() => {
         console.log('Haiku: Reset text ');
-        logStatus.innerText = 'Touch to send emoji';
+        logStatus.innerText = 'Touch to send.';
       }, 5000);
+  };
+
+  var emoji_map = {
+    left: 'Smiley',
+    middle: 'Heart',
+    right: 'Unicorn'
   };
 
   EmojiPanel.prototype = {
@@ -60,14 +66,32 @@
       console.log('Haiku:sending emoji ', messageBody);
       mozMessage.send(receiver, messageBody);
     },
+
     clearReceivedMessages: function() {
-      var emojis = document.querySelector('#emoji-icons');
-      var emojiNodes = emojis.querySelectorAll('.received');
+      function flashEmojis() {
+        // TBD Handle animating received emojis
+        logStatus.innerText = 'You just received emoji ' + emoji_map[this.receivedMessages.pop().body] + '...';
+        if (this.receivedMessages.length == 0) {
+          stopFlash();
+        }
+      }
+
+      function stopFlash() {
+        clearInterval(intervalId);
+        resetStatus();
+      }
+
+      var emojis = document.querySelector('#panel_emoji');
+      var emojiNodes = emojis.querySelectorAll('section[id="emoji-icons"] > div');
       for(var i=0; i<emojiNodes.length; i++) {
         emojiNodes[i].classList.remove('received');
       }
       emojis.classList.remove('received');
+      emojis.querySelector('section').classList.remove('received');
+
+      var intervalId = setInterval(flashEmojis.bind(this), 1000);
     },
+
     onMessageReceived: function(e) {
       var message = e.message;
       console.log('Haiku: New Message Received..');
@@ -75,16 +99,16 @@
       console.log('Haiku: Message receiver', message.receiver);
       console.log('Haiku: Message body', message.body);
 
-      logStatus.innerText = 'You just received emoji ' + message.body + '...';
-
-      var emojis = document.querySelector('#emoji-icons');
+      var emojis = document.querySelector('#panel_emoji');
       if (message.body === 'left' ||
           message.body === 'middle' ||
           message.body === 'right')
       {
         this.receivedMessages.push(message);
         emojis.classList.add('received');
-        emojis.querySelector('> .' + message.body).classList.add('received');
+        emojis.querySelector('section').classList.add('received');
+        emojis.querySelector('section[id="emoji-icons"] > div.' + message.body).classList.add('received');
+        logStatus.innerText = 'Touch to view.';
       }
     },
 
@@ -95,8 +119,7 @@
       console.log('Haiku: Message receiver', message.receiver);
       console.log('Haiku: Message body', message.body);
       // Display status
-      logStatus.innerText = 'Sending emoji ' + message.body + '...';
-      // TBD Change opacity and animate to highlight emoji  clicked and sent..
+      logStatus.innerText = 'Sending emoji...';
     },
 
     onMessageSent: function(e) {
@@ -105,8 +128,8 @@
       console.log('Haiku: Message sender', message.sender);
       console.log('Haiku: Message receiver', message.receiver);
       console.log('Haiku: Message body', message.body);
-      //Display message for 10 seconds
-      logStatus.innerText = message.body + ' emoji sent successfully...';
+      //Display message for 5 seconds
+      logStatus.innerText = emoji_map[message.body] + ' has been sent.';
       resetStatus();
     },
 
@@ -116,7 +139,7 @@
       console.log('Haiku: Message sender', message.sender);
       console.log('Haiku: Message receiver', message.receiver);
       console.log('Haiku: Message body', message.body);
-      logStatus.innerText =  ' Failed to send emoji ' + message.body;
+      logStatus.innerText =  ' Failed to send emoji.';
       resetStatus();
     }
   };
