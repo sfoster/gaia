@@ -175,7 +175,7 @@ Emoji Panel Styles
 }
 
 .icon:active {
-  transform: translateY(8px);
+  transform: scale(1.5);
 }
 
 
