@@ -71,8 +71,17 @@
 
     clearReceivedMessages: function() {
       function flashEmojis() {
-        // TBD Handle animating received emojis
-        logStatus.innerText = 'You just received emoji ' + emoji_map[this.receivedMessages.pop().body] + '...';
+        var current = this.receivedMessages.pop().body;
+        logStatus.innerText = 'You just received emoji ' + emoji_map[current] + '...';
+        //animate emoji to increase scale x2 then reset scale after 2000ms
+        emojis.querySelector('section[id="emoji-icons"] > div.' + current).classList.add('iconReceived');
+        setTimeout(function() {
+          emojis.querySelector('section[id="emoji-icons"] > div.' + current).classList.remove('iconReceived');
+        }, 2000);
+
+        var audio = document.getElementsByTagName('audio')[0];
+        audio.play();
+
         if (this.receivedMessages.length == 0) {
           stopFlash();
         }

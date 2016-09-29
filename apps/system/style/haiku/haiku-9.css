@@ -178,6 +178,9 @@ Emoji Panel Styles
   transform: scale(1.5);
 }
 
+.iconReceived {
+  transform: scale(1.5);
+}
 
 @media (orientation: landscape) {
   #emoji-icons > div {
