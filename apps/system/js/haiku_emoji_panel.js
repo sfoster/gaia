@@ -58,6 +58,8 @@
       var target = e.target;
       var receiver = window.app.pairNumber;
       var messageBody = target && target.dataset.icon;
+      var audio = document.getElementsByTagName('audio')[0];
+      audio.play();
 
       if (!messageBody) {
         return;
