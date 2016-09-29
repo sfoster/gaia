@@ -67,6 +67,16 @@
       });
     },
     changeState: function(toState) {
+      function resetMissedStatus() {
+        // Reset Status text back to 'Touch to send' after 5 seconds
+        setTimeout(() => {
+          this.panelNode.classList.remove('missed');
+          this.updateLogStatus('Touch to call.');
+          if (fromState === 'incoming') {
+            this.callButton.domNode.classList.add('missed');
+          }
+        }, 5000);
+      }
       // state reflects current action. Action causes state change
       if (!(toState in CallPanel.CALL_STATES)) {
         console.log('CallPanel: changeState: ignoring unexpected state ' +
@@ -77,6 +87,7 @@
       if (toState == fromState) {
         return;
       }
+
       this.callState = toState;
       this.callButton.changeState(toState);
 
@@ -91,25 +102,47 @@
       switch (toState) {
         case 'disconnected':
           if (fromState === 'offline') {
-            this.updateLogStatus('Ready, touch to call');
+            this.updateLogStatus('Touch to call.');
           }
+
+          if (fromState === 'incoming') {
+            // misssed call, change background color to red
+            // and text as missed call
+            // after 5 second reset text and show red circle
+            this._callInProgress = null;
+            this.panelNode.classList.add('missed');
+            this.updateLogStatus('Missed call.');
+            resetMissedStatus.call(this);
+          }
+
+          if (fromState === 'dialing') {
+            // Call not answered, change background color to red
+            // after 6 rings and text as 'No Answer'
+            // reset text after 5 seconds
+            // TBD need to check if call is disconnected before 6 rings
+            // than its not a No Answer call
+            this._callInProgress = null;
+            this.panelNode.classList.add('missed');
+            this.updateLogStatus('No Answer.');
+            resetMissedStatus.call(this);
+          }
+
           if (fromState === 'connected') {
             this._callInProgress = null;
-            this.updateLogStatus('Ready, touch to call');
+            this.updateLogStatus('Touch to call.');
           }
           break;
         case 'offline':
           this.updateLogStatus('Searching...');
           break;
         case 'incoming':
-          this.updateLogStatus('Incoming call from: ' +
-                               call.id.number);
+          this.updateLogStatus('Ringing...');
           break;
         case 'dialing':
-          this.updateLogStatus('Dialing...');
+          this.updateLogStatus('Ringing...');
           break;
         case 'connected':
-            this.updateLogStatus('Touch to hang up');
+            this.updateLogStatus('Touch to end call.');
             break;
         default:
           console.log('CallPanel changeState from: %s to %s ',
@@ -198,7 +231,7 @@
       document.querySelector('#call-status-log').textContent = msg;
     },
     clearMissedCalls: function() {
-      this.callButton.domNode.classList.remove('received');
+      this.callButton.domNode.classList.remove('missed');
     }
   };
   exports.CallPanel = CallPanel;

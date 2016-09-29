@@ -18,6 +18,7 @@
       // unhook listeners etc
     },
     onClick: function() {
+      this.panel.clearMissedCalls();
       switch (this.panel.callState) {
         case 'offline':
           console.log('not connected, cant call out');
