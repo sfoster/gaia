@@ -15,7 +15,7 @@
         <div class="icon left" data-icon="left" id="emoji_left"></div>
         <div class="icon middle" data-icon="middle" id="emoji_middle"></div>
         <div class="icon right" data-icon="right" id="emoji_right"></div>
-        <audio preload> 
+        <audio preload id="sms_tone">
           <source src="style/haiku/audio/sms.mp3"></source>
         </audio>
       </section>
@@ -26,6 +26,9 @@
     <section id="panel_call" class="panel">
       <section id="buttons">
         <div class="btn offline" id="call_btn"></div>
+        <audio preload id="call_tone">
+          <source src="style/haiku/audio/old_school.mp3"></source>
+        </audio>
       </section>
       <section id="middle">
         <div id="call-status-log">Touch to Call.</div>

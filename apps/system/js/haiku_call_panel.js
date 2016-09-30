@@ -39,6 +39,8 @@
         this.callButton = new exports.CallButton(
             this.panelNode.querySelector('.btn'), this, window.app);
         this.callButton.start();
+        this.audio = document.querySelector('#call_tone');
+        this.audio.load();
 
         this.statusNode = document.querySelector('#status');
 
@@ -91,13 +93,20 @@
       this.callState = toState;
       this.callButton.changeState(toState);
 
-      var call = this._callInProgress;
       var stateNames = Object.keys(CallPanel.CALL_STATES);
       this.panelNode.classList.remove.apply(
           this.panelNode.classList, stateNames);
       this.panelNode.classList.add(toState);
       console.log('CallPanel: panelNode className ',
           this.panelNode.className);
+
+      if (fromState === 'incoming') {
+        // stop the ring tone
+        if (this._incomingAnnounce) {
+          this._incomingAnnounce.stop();
+          this._incomingAnnounce = null;
+        }
+      }
 
       switch (toState) {
         case 'disconnected':
@@ -137,6 +146,10 @@
           break;
         case 'incoming':
           this.updateLogStatus('Ringing...');
+          this.announceIncoming(6, () => {
+            console.log('incoming timeout, hanging up');
+            this.hangupCurrentCall();
+          });
           break;
         case 'dialing':
           this.updateLogStatus('Ringing...');
@@ -232,7 +245,35 @@
     },
     clearMissedCalls: function() {
       this.callButton.domNode.classList.remove('missed');
-    }
+    },
+    announceIncoming: function(rings, onTimeout) {
+      var audio = this.audio;
+      var duration = 1000 * audio.duration;
+      var adjust = -400;
+      console.log('announceIncoming, %s rings at % ms each',
+                  rings, duration+adjust);
+      function ring() {
+        audio.pause();
+        if (rings-- <= 0) {
+          clearInterval(itv);
+          onTimeout && onTimeout();
+        } else {
+          console.log('playing call tone', duration+'ms');
+          audio.currentTime = 0.01;
+          audio.play();
+        }
+      }
+      ring();
+      var itv = setInterval(ring, duration+adjust);
+      return (this._incomingAnnounce = {
+        toneDuration: duration+adjust,
+        stop: () => {
+          this.audio.pause();
+          clearInterval(itv);
+        }
+      });
+    },
+
   };
   exports.CallPanel = CallPanel;
 })(window);

@@ -58,7 +58,7 @@
       var target = e.target;
       var receiver = window.app.pairNumber;
       var messageBody = target && target.dataset.icon;
-      var audio = document.getElementsByTagName('audio')[0];
+      var audio = document.querySelector('#sms_tone');
       audio.play();
 
       if (!messageBody) {
@@ -70,22 +70,24 @@
     },
 
     clearReceivedMessages: function() {
-      function flashEmojis() {
+      var flashEmojis = () => {
         var current = this.receivedMessages.pop().body;
-        logStatus.innerText = 'You just received emoji ' + emoji_map[current] + '...';
+        logStatus.innerText = 'You just received emoji ' +
+                              emoji_map[current] + '...';
+        var selector = 'section[id="emoji-icons"] > div.' + current;
         //animate emoji to increase scale x2 then reset scale after 2000ms
-        emojis.querySelector('section[id="emoji-icons"] > div.' + current).classList.add('iconReceived');
+        emojis.querySelector(selector).classList.add('iconReceived');
         setTimeout(function() {
-          emojis.querySelector('section[id="emoji-icons"] > div.' + current).classList.remove('iconReceived');
+          emojis.querySelector(selector).classList.remove('iconReceived');
         }, 2000);
 
         var audio = document.getElementsByTagName('audio')[0];
         audio.play();
 
-        if (this.receivedMessages.length == 0) {
+        if (this.receivedMessages.length === 0) {
           stopFlash();
         }
-      }
+      };
 
       function stopFlash() {
         clearInterval(intervalId);
@@ -93,7 +95,8 @@
       }
 
       var emojis = document.querySelector('#panel_emoji');
-      var emojiNodes = emojis.querySelectorAll('section[id="emoji-icons"] > div');
+      var emojiNodes = emojis.querySelectorAll(
+          'section[id="emoji-icons"] > div');
       for(var i=0; i<emojiNodes.length; i++) {
         emojiNodes[i].classList.remove('received');
       }
@@ -118,7 +121,8 @@
         this.receivedMessages.push(message);
         emojis.classList.add('received');
         emojis.querySelector('section').classList.add('received');
-        emojis.querySelector('section[id="emoji-icons"] > div.' + message.body).classList.add('received');
+        emojis.querySelector('section[id="emoji-icons"] > div.' + message.body)
+                            .classList.add('received');
         logStatus.innerText = 'Touch to view.';
       }
     },

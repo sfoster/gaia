@@ -43,9 +43,11 @@
     },
     changeState: function(toState) {
       this.domNode.classList.remove(
-        'offline', 'connected', 'disconnected', 'dialing', 'incoming'
+        'offline', 'connected', 'disconnected', 'dialing', 'incoming', 'missed'
       );
       this.domNode.classList.add(toState);
+      console.log('CallButton changeState to: %s, className: %s',
+                  toState, this.domNode.className);
     }
 
   };
