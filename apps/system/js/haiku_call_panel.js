@@ -75,7 +75,7 @@
           this.panelNode.classList.remove('missed');
           this.updateLogStatus('Touch to call.');
           if (fromState === 'incoming') {
-            this.callButton.domNode.classList.add('missed');
+            this.callButton.changeState('missed');
           }
         }, 5000);
       }
@@ -97,8 +97,6 @@
       this.panelNode.classList.remove.apply(
           this.panelNode.classList, stateNames);
       this.panelNode.classList.add(toState);
-      console.log('CallPanel: panelNode className ',
-          this.panelNode.className);
 
       if (fromState === 'incoming') {
         // stop the ring tone
@@ -118,6 +116,7 @@
             // misssed call, change background color to red
             // and text as missed call
             // after 5 second reset text and show red circle
+            this.missedCalls.push(this._callInProgress.id);
             this._callInProgress = null;
             this.panelNode.classList.add('missed');
             this.updateLogStatus('Missed call.');
@@ -195,7 +194,7 @@
         call.onstatechange = (event) => {
           var stateName = event.call.state;
           this.changeState(stateName);
-          console.log('call state change', event.call.state, call);
+          console.log('outgoing call, state change:', event.call.state, call);
         };
       }, function(err) {
         console.warn('Error trying to dial: ', err);
@@ -213,7 +212,7 @@
         this._callInProgress = call;
         // bind to events for the incoming call
         call.onstatechange = (event) => {
-            console.log('call state change:', event.call.state, call);
+            console.log('incoming call, state change:', event.call.state, call);
             this.changeState(event.call.state);
         };
         this.changeState('incoming');
@@ -244,7 +243,8 @@
       document.querySelector('#call-status-log').textContent = msg;
     },
     clearMissedCalls: function() {
-      this.callButton.domNode.classList.remove('missed');
+      this.missedCalls.length = 0;
+      this.callButton.changeState(this.callState);
     },
     announceIncoming: function(rings, onTimeout) {
       var audio = this.audio;
@@ -252,6 +252,9 @@
       var adjust = -400;
       console.log('announceIncoming, %s rings at % ms each',
                   rings, duration+adjust);
+      if (this._incomingAnnounce) {
+        this._incomingAnnounce.stop();
+      }
       function ring() {
         audio.pause();
         if (rings-- <= 0) {
