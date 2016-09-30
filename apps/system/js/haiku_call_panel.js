@@ -231,7 +231,10 @@
     },
     isKnownCaller: function(call) {
       var incomingNum = call.id && call.id.number;
-      return incomingNum === window.app.pairNumber;
+      var pairNumber = '+1' + window.app.pairNumber;
+
+      return (incomingNum === pairNumber ||
+              incomingNum === window.app.pairNumber);
     },
     hangupCurrentCall: function() {
       if (this._callInProgress) {

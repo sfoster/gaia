@@ -103,6 +103,8 @@
       emojis.classList.remove('received');
       emojis.querySelector('section').classList.remove('received');
 
+      // Reset text to blank before showing received emoji animations
+      logStatus.innerText = '';
       var intervalId = setInterval(flashEmojis.bind(this), 1000);
     },
 
