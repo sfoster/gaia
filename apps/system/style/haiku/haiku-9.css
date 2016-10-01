@@ -135,12 +135,12 @@ Emoji Panel Styles
  }
 
 .right {
-  background: url('images/unicorn.png') center no-repeat;
+  background: url('images/thumbsUp.png') center no-repeat;
 }
 
 .received {
   background-color: #9ECC3A;
-  color: #fff;
+  color: #fff !important;
   font-size: 2rem;
   display: flex !important;
 }
