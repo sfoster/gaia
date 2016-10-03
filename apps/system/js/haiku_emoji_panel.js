@@ -73,9 +73,16 @@
       var target = e.target;
       var receiver = window.app.pairNumber;
       var messageBody = target && target.dataset.icon;
+
       if (!messageBody) {
         return;
       }
+
+      var smsTone = document.querySelector('#sms_tone');
+      smsTone.play();
+      var emojiSound = document
+          .querySelector('#'+ messageBody +'_tone');
+      emojiSound.play();
 
       console.log('Haiku:sending emoji ', messageBody);
       mozMessage.send(receiver, messageBody);
@@ -93,6 +100,10 @@
           var currentNode = document.querySelector(
               'section[id="emoji-icons"] > div.' +
               currentMessage.body);
+          var emojiSound = document.querySelector(
+              '#'+ currentMessage.body +'_tone');
+          emojiSound.play();
+
           //animate emoji to increase scale x2 then reset scale after 2000ms
           currentNode.classList.add('iconReceived');
           setTimeout(function() {
@@ -102,7 +113,6 @@
             }
           }, 2000);
 
-          this.audio.play();
 
           if (msgArrayLength === 0) {
             stopFlash();
