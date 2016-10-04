@@ -14,6 +14,8 @@
    * in the dependency tree and put it there.
    */
   window.app = new App();
+  screen.mozLockOrientation("portrait");
+
   var startApp = function() {
     window.app.start().catch(function(err) {
       console.error(err);
@@ -32,4 +34,12 @@
         }
       });
   }
+
+  window.addEventListener("load", function(event) {
+    setTimeout(() => {
+      screen.mozUnlockOrientation();
+      screen.mozLockOrientation("landscape");
+    }, 5000);
+  });
+
 }());

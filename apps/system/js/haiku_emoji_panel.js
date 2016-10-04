@@ -25,13 +25,13 @@
 
   EmojiPanel.prototype = {
     _shouldBlockEmojiClicks: false,
+    _receivedAnimInProgress: false,
     start: function() {
       return new Promise((res, rej) => {
         // hook up listeners etc
         this.registerHandlers();
         this.audio = document.querySelector('#sms_tone');
         this.audio.load();
-        this._receivedAnimInProgress = null;
         res(true);
         console.log('EmojiPanel starting');
       });
@@ -90,13 +90,11 @@
 
     clearReceivedMessages: function() {
       var flashEmojis = () => {
-        this._receivedAnimInProgress = true;
         var currentMessage = this.receivedMessages.shift();
         var msgArrayLength = this.receivedMessages.length;
 
         if (currentMessage && currentMessage.body) {
-          logStatus.innerText = 'You just received emoji ' +
-                                emoji_map[currentMessage.body] + '...';
+          logStatus.innerText = emoji_map[currentMessage.body] + '!';
           var currentNode = document.querySelector(
               'section[id="emoji-icons"] > div.' +
               currentMessage.body);
@@ -112,30 +110,27 @@
               logStatus.innerText = 'Touch to send.';
             }
           }, 2000);
+        }
 
-
-          if (msgArrayLength === 0) {
-            stopFlash();
-          }
+        if (msgArrayLength === 0) {
+          stopFlash();
+        } else {
+          this._receivedAnimInProgress = true;
         }
       };
 
       var stopFlash = () => {
-        this._receivedAnimInProgress = null;
+        this._receivedAnimInProgress = false;
         clearInterval(intervalId);
       };
 
       var emojis = document.querySelector('#panel_emoji');
-      var emojiNodes = emojis.querySelectorAll(
-          'section[id="emoji-icons"] > div');
-      for(var i=0; i<emojiNodes.length; i++) {
-        emojiNodes[i].classList.remove('received');
-      }
       emojis.classList.remove('received');
       emojis.querySelector('section').classList.remove('received');
 
       // Reset text to blank before showing received emoji animations
       logStatus.innerText = '';
+      flashEmojis();
       var intervalId = setInterval(flashEmojis.bind(this), 3000);
     },
 
@@ -159,9 +154,6 @@
             this.audio.play();
             emojis.classList.add('received');
             emojis.querySelector('section').classList.add('received');
-            emojis.querySelector(
-              'section[id="emoji-icons"] > div.' + message.body
-            ).classList.add('received');
           }
           // Set log status to view new messages
           logStatus.innerText = 'Touch to view.';
@@ -176,7 +168,7 @@
       console.log('Haiku: Message receiver', message.receiver);
       console.log('Haiku: Message body', message.body);
       // Display status
-      logStatus.innerText = 'Sending emoji...';
+      //logStatus.innerText = 'Sending emoji...';
     },
 
     onMessageSent: function(e) {
@@ -196,7 +188,7 @@
       console.log('Haiku: Message sender', message.sender);
       console.log('Haiku: Message receiver', message.receiver);
       console.log('Haiku: Message body', message.body);
-      logStatus.innerText =  ' Failed to send emoji.';
+      logStatus.innerText =  'Failed to send emoji.';
       resetStatus();
     }
   };
