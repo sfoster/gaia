@@ -32,6 +32,8 @@
       }
       this.audioRouting = 'speaker';
 
+      this.powerButton = new exports.PowerButton();
+
       this.startUI();
 
       return Promise.all(loadTasks).then(() => {
@@ -42,6 +44,8 @@
     pairNumber: '',
 
     startUI: function() {
+      this.powerButton.start();
+
       this.rebootBtn = document.querySelector('#reboot');
       this.rebootBtn.addEventListener('click', function(evt) {
         console.log('rebooting');
@@ -67,8 +71,9 @@
     },
     started: function() {
       if (this._started) {
-        throw new Error('App: bootstrap should not be called twice.');
+        throw new Error('App: started should not be called twice.');
       }
+      window.focus();
       this._started = true;
 
       var startedTasks = [new Promise((res, rej) => {
