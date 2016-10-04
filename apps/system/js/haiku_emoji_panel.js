@@ -24,6 +24,7 @@
   };
 
   EmojiPanel.prototype = {
+    _shouldBlockEmojiClicks: false,
     start: function() {
       return new Promise((res, rej) => {
         // hook up listeners etc
@@ -40,8 +41,19 @@
     },
     registerHandlers: function() {
       var emojis = document.querySelector('#emoji-icons');
+
       // Handle clicks on the emojis
-      emojis.addEventListener('click', this.emojiClickHandler);
+      emojis.addEventListener('click', (e) => {
+        if (!this._shouldBlockEmojiClicks) {
+          this.emojiClickHandler(e);
+          emojis.classList.add('sending');
+          this._shouldBlockEmojiClicks = true;
+          setTimeout(() => {
+            this._shouldBlockEmojiClicks = false;
+            emojis.classList.remove('sending');
+          }, 2000);
+        }
+      });
 
       mozMessage.addEventListener(
         'received', this.onMessageReceived.bind(this)
@@ -61,7 +73,6 @@
       var target = e.target;
       var receiver = window.app.pairNumber;
       var messageBody = target && target.dataset.icon;
-
       if (!messageBody) {
         return;
       }
@@ -79,8 +90,9 @@
         if (currentMessage && currentMessage.body) {
           logStatus.innerText = 'You just received emoji ' +
                                 emoji_map[currentMessage.body] + '...';
-          var currentNode = emojis.querySelector('section[id="emoji-icons"] > div.' +
-                                                  currentMessage.body);
+          var currentNode = document.querySelector(
+              'section[id="emoji-icons"] > div.' +
+              currentMessage.body);
           //animate emoji to increase scale x2 then reset scale after 2000ms
           currentNode.classList.add('iconReceived');
           setTimeout(function() {
@@ -119,7 +131,7 @@
 
     onMessageReceived: function(e) {
       var message = e.message;
-      console.log('Haiku: New Message Received..');
+      console.log('Haiku: New Message Received: ', e);
       console.log('Haiku: Message sender', message.sender);
       console.log('Haiku: Message receiver', message.receiver);
       console.log('Haiku: Message body', message.body);
@@ -133,12 +145,13 @@
         if (!this._receivedAnimInProgress) {
           // Check if received class is set on the panel once
           var emojis = document.querySelector('#panel_emoji');
-          if (!emojis.classList.contains("received")) {
+          if (!emojis.classList.contains('received')) {
             this.audio.play();
             emojis.classList.add('received');
             emojis.querySelector('section').classList.add('received');
-            emojis.querySelector('section[id="emoji-icons"] > div.' + message.body)
-                                .classList.add('received');
+            emojis.querySelector(
+              'section[id="emoji-icons"] > div.' + message.body
+            ).classList.add('received');
           }
           // Set log status to view new messages
           logStatus.innerText = 'Touch to view.';

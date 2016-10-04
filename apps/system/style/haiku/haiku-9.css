@@ -55,22 +55,6 @@ body:not([data-ready="ready"]) .btn {
   opacity: 0.1;
 }
 
-body[data-testmode="emoji"] #panel_call {
-  display: none;
-}
-
-body[data-testmode="emoji"] #panel_emoji {
-  display: block;
-}
-
-body[data-testmode="call"] #panel_call {
-  display: block;
-}
-
-body[data-testmode="call"] #panel_emoji {
-  display: none;
-}
-
 #panel_call {
   flex: 1 1 33%;
   color: #fff;
@@ -122,6 +106,7 @@ Emoji Panel Styles
 */
 
 #panel_emoji {
+  display: flex;
   flex: 1 1 66%;
   color: #0F9FED;
 }
@@ -140,9 +125,8 @@ Emoji Panel Styles
 
 .received {
   background-color: #9ECC3A;
-  color: #fff !important;
+  color: #fff;
   font-size: 2rem;
-  display: flex !important;
 }
 
 #emoji-icons  {
@@ -152,6 +136,11 @@ Emoji Panel Styles
   align-items: center;
   justify-content: center;
   width: 100%;
+  transition: opacity 0.4s ease;
+}
+#emoji-icons.sending {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 #emoji-icons > div {
@@ -170,10 +159,14 @@ Emoji Panel Styles
   color: #fff;
   justify-content: center;
 }
+#emoji-top-section.received {
+  display: flex;
+}
 
 .icon:active {
   transform: scale(1.5);
 }
+
 
 .iconReceived {
   transform: scale(1.5);
