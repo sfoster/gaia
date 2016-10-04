@@ -111,6 +111,10 @@ Emoji Panel Styles
   color: #0F9FED;
 }
 
+#panel_emoji.received {
+  pointer-events: none;
+}
+
 .left {
   background: url('images/smiley.png') center no-repeat;
 }
