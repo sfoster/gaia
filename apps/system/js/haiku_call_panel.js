@@ -25,6 +25,7 @@
 
   CallPanel.prototype = {
     callState: '',
+    RING_COUNT: 4,
     start: function() {
       return new Promise((res, rej) => {
         console.log('CallPanel starting');
@@ -145,7 +146,7 @@
           break;
         case 'incoming':
           this.updateLogStatus('Ringing...');
-          this.announceIncoming(6, () => {
+          this.announceIncoming(this.RING_COUNT, () => {
             console.log('incoming timeout, hanging up');
             this.hangupCurrentCall();
           });
