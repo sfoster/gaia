@@ -46,13 +46,6 @@
     startUI: function() {
       this.powerButton.start();
 
-      this.rebootBtn = document.querySelector('#reboot');
-      this.rebootBtn.addEventListener('click', function(evt) {
-        console.log('rebooting');
-        var power = navigator.mozPower;
-        power.reboot();
-      });
-
       this.containerNode = document.querySelector('#panels');
       this.containerNode.addEventListener('click', (event) => {
         // intercept clicks if there are pending received messages
