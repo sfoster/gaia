@@ -57,13 +57,24 @@
       window.addEventListener('connection-voicechange', (evt) => {
         var voiceConnected = evt.detail.connected;
 
+        var signalStates = ['no-signal', 'low-signal', 'weak-signal',
+                            'good-signal', 'strong-signal'];
+        this.signalNode.classList.remove.apply(
+          this.signalNode.classList, signalStates);
+
         if (voiceConnected) {
           console.log('voice connected, signal strength: ', evt.detail.signal);
-          this.signalNode.classList.remove('offline');
-          this.signalNode.style.width = evt.detail.signal + '%';
+          if (evt.detail.signal < 25) {
+            this.signalNode.classList.add('weak-signal');
+          } else if (evt.detail.signal >= 25 && evt.detail.signal < 50) {
+            this.signalNode.classList.add('low-signal');
+          } else if (evt.detail.signal >= 50 && evt.detail.signal < 75) {
+            this.signalNode.classList.add('good-signal');
+          } else if (evt.detail.signal >= 75) {
+            this.signalNode.classList.add('strong-signal');
+          }
         } else {
-          this.signalNode.classList.add('offline');
-          this.signalNode.style.width = '100%';
+          this.signalNode.classList.add('no-signal');
         }
 
         if (voiceConnected && this.callState === 'offline') {
