@@ -134,24 +134,36 @@ Emoji Panel Styles
 }
 
 #signal {
-  border: 1px solid #000;
-  width: 35px;
   margin: 5px;
   position: absolute;
   z-index: 2;
 }
 
 #signalLevel {
-  min-height: 10px;
-  width: 0%;
-  background-image: repeating-linear-gradient(90deg, transparent 0%, transparent 42%,
-                                              #000 42%, #000 57%,
-                                              #000 57%, #000 100%);
-  background-size: 0.5rem;
+  width: 15px;
+  height: 11px;
+  background: url('images/SignalStrength.png');
+  background-position: 0 0;
 }
 
-#signalLevel.offline {
-  background: rgba(255, 0, 0, 1) none repeat scroll 0% 0%;
+#signalLevel.no-signal {
+  background-position: 0 0;
+}
+
+#signalLevel.weak-signal {
+  background-position: -19px 0;
+}
+
+#signalLevel.low-signal {
+  background-position: -38px 0;
+}
+
+#signalLevel.good-signal {
+  background-position: -57px 0;
+}
+
+#signalLevel.strong-signal {
+  background-position: -76px 0;
 }
 
 #emoji-icons  {
