@@ -25,7 +25,7 @@ body {
 }
 
 #panels {
-  height: calc(100% - 3rem);
+  height: calc(100% - 0rem);
   display: flex;
   flex-direction: row;
 }
@@ -98,7 +98,7 @@ body:not([data-ready="ready"]) .btn {
 }
 
 #call_btn.missed {
-  box-shadow: 0 6px 9px 1px rgba(255, 0, 0, 1);
+  box-shadow: 0 0 10px 10px rgba(255, 0, 0, 1);
 }
 
 /**
@@ -131,6 +131,27 @@ Emoji Panel Styles
   background-color: #9ECC3A;
   color: #fff;
   font-size: 2rem;
+}
+
+#signal {
+  border: 1px solid #000;
+  width: 35px;
+  margin: 5px;
+  position: absolute;
+  z-index: 2;
+}
+
+#signalLevel {
+  min-height: 10px;
+  width: 0%;
+  background-image: repeating-linear-gradient(90deg, transparent 0%, transparent 42%,
+                                              #000 42%, #000 57%,
+                                              #000 57%, #000 100%);
+  background-size: 0.5rem;
+}
+
+#signalLevel.offline {
+  background: rgba(255, 0, 0, 1) none repeat scroll 0% 0%;
 }
 
 #emoji-icons  {
@@ -171,7 +192,6 @@ Emoji Panel Styles
   transform: scale(1.5);
 }
 
-
 .iconReceived {
   transform: scale(1.5);
 }
@@ -180,32 +200,4 @@ Emoji Panel Styles
   #emoji-icons > div {
     -moz-margin-start: 0;
   }
-}
-
-body > footer {
-  flex: 1 1 3rem;
-  height: 3rem;
-  background-color: #000;
-  color: #eee;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
-  align-content: flex-end;
-  padding: 0.25rem 0;
-}
-
-#status {
-  flex: 0 0 2.5rem;
-  margin: 0 1rem;
-}
-
-#reboot {
-  flex: 0 0 2.5rem;
-  margin: 0 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  background: #999 url('../sleep_menu/images/power-off.png') no-repeat;
-  background-size: contain;
-  border-radius: 1.25rem;
 }

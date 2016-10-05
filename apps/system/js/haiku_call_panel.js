@@ -43,7 +43,7 @@
         this.audio = document.querySelector('#call_tone');
         this.audio.load();
 
-        this.statusNode = document.querySelector('#status');
+        this.signalNode = document.querySelector('#signalLevel');
 
         this.registerHandlers();
         this.changeState('offline');
@@ -56,8 +56,15 @@
     registerHandlers: function() {
       window.addEventListener('connection-voicechange', (evt) => {
         var voiceConnected = evt.detail.connected;
-        this.statusNode.textContent = (voiceConnected) ?
-          evt.detail.signal + '%' : 'offline';
+
+        if (voiceConnected) {
+          console.log('voice connected, signal strength: ', evt.detail.signal);
+          this.signalNode.classList.remove('offline');
+          this.signalNode.style.width = evt.detail.signal + '%';
+        } else {
+          this.signalNode.classList.add('offline');
+          this.signalNode.style.width = '100%';
+        }
 
         if (voiceConnected && this.callState === 'offline') {
           // network connected, calls possible but none connected
@@ -145,7 +152,7 @@
           this.updateLogStatus('Searching...');
           break;
         case 'incoming':
-          this.updateLogStatus('Ringing...');
+          this.updateLogStatus('Touch to answer.');
           this.announceIncoming(this.RING_COUNT, () => {
             console.log('incoming timeout, hanging up');
             this.hangupCurrentCall();

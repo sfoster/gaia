@@ -4,7 +4,7 @@
   function PowerButton(){}
 
   PowerButton.prototype =  {
-    SHUTDOWN_THRESHOLD: 5000,
+    SHUTDOWN_THRESHOLD: 3000,
     start: function() {
       console.log('PowerButton start');
       window.addEventListener('mozbrowserbeforekeydown', this);
