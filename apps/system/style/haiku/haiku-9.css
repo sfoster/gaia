@@ -109,14 +109,16 @@ Emoji Panel Styles
   display: flex;
   flex: 1 1 66%;
   color: #0F9FED;
+  background-color: #E1F4FD;
 }
 
 #panel_emoji.received {
   pointer-events: none;
+  background-color: #9ECC3A;
 }
 
 .left {
-  background: url('images/smiley.png') center no-repeat;
+  background: url('images/thumbsUp.png') center no-repeat;
 }
 
 .middle {
@@ -124,7 +126,7 @@ Emoji Panel Styles
  }
 
 .right {
-  background: url('images/thumbsUp.png') center no-repeat;
+  background: url('images/smiley.png') center no-repeat;
 }
 
 .received {
