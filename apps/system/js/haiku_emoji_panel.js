@@ -18,9 +18,9 @@
   };
 
   var emoji_map = {
-    left: 'Smiley',
+    left: 'ThumbsUp',
     middle: 'Heart',
-    right: 'ThumbsUp'
+    right: 'Smiley'
   };
 
   EmojiPanel.prototype = {
