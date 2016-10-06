@@ -21,7 +21,7 @@ body {
   flex-direction: column;
   justify-content: center;
   background: #ffffff;
-  font-size: 1.8rem;
+  font-size: 2.4rem;
 }
 
 #panels {
@@ -89,7 +89,6 @@ body:not([data-ready="ready"]) .btn {
   font-size: 1.5rem;
   box-sizing: border-box;
   border-radius: 6rem;
-  box-shadow: 0 6px 9px 1px rgba(0, 0, 0, 0.6);
   background: url('images/call_btn.png') center no-repeat;
 }
 
@@ -98,7 +97,7 @@ body:not([data-ready="ready"]) .btn {
 }
 
 #call_btn.missed {
-  box-shadow: 0 0 10px 10px rgba(255, 0, 0, 1);
+  box-shadow: 0 0 0 10px #EF3F23;
 }
 
 /**
@@ -115,6 +114,7 @@ Emoji Panel Styles
 #panel_emoji.received {
   pointer-events: none;
   background-color: #9ECC3A;
+  color: #fff;
 }
 
 .left {
@@ -132,7 +132,7 @@ Emoji Panel Styles
 .received {
   background-color: #9ECC3A;
   color: #fff;
-  font-size: 2rem;
+  font-size: 2.4rem;
 }
 
 #signal {
@@ -204,6 +204,10 @@ Emoji Panel Styles
 
 .icon:active {
   transform: scale(1.5);
+}
+
+.dim section[id="emoji-icons"] > div:not(.iconReceived) {
+  opacity: 0.2;
 }
 
 .iconReceived {

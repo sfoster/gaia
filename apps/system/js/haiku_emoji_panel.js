@@ -18,8 +18,8 @@
   };
 
   var emoji_map = {
-    left: 'ThumbsUp',
-    middle: 'Heart',
+    left: 'Thumbs Up',
+    middle: 'Love',
     right: 'Smiley'
   };
 
@@ -104,8 +104,10 @@
 
           //animate emoji to increase scale x2 then reset scale after 2000ms
           currentNode.classList.add('iconReceived');
+          emojis.classList.add('dim');
           setTimeout(function() {
             currentNode.classList.remove('iconReceived');
+            emojis.classList.remove('dim');
             if (msgArrayLength === 0) {
               logStatus.innerText = 'Touch to send.';
             }
