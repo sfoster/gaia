@@ -18,8 +18,8 @@
   };
 
   var emoji_map = {
-    left: 'ThumbsUp',
-    middle: 'Heart',
+    left: 'Thumbs Up',
+    middle: 'Love',
     right: 'Smiley'
   };
 
