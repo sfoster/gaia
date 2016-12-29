@@ -8,6 +8,16 @@
   };
   var mozMessage = navigator.mozMobileMessage;
   var logStatus = document.querySelector('#emoji-status-bottom');
+  var handleNextSMS = true;
+  //sets handleSMS to true and 
+  function setNextTrue() {
+    handleNextSMS = true;
+    document.querySelector('#emoji-icons').classList.remove('avoidClicks');
+  }
+
+  function trueAfterDelay(delay) {
+    setTimeout(setNextTrue, delay);
+  }
 
   var resetStatus = function() {
     // Reset Status text back to 'Touch to send' after 10 seconds
@@ -70,6 +80,7 @@
     },
 
     emojiClickHandler: function(e) {
+
       var target = e.target;
       var receiver = window.app.pairNumber;
       var messageBody = target && target.dataset.icon;
@@ -86,6 +97,9 @@
 
       console.log('Haiku:sending emoji ', messageBody);
       mozMessage.send(receiver, messageBody);
+      }
+      //if it's < 2 seconds, disable hover/pointer (for animation) and do not send msg
+      document.querySelector('#emoji-icons').classList.add('avoidClicks');
     },
 
     clearReceivedMessages: function() {

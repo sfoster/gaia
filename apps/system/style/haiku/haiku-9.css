@@ -214,6 +214,10 @@ Emoji Panel Styles
   transform: scale(1.5);
 }
 
+.avoidClicks > div {
+  pointer-events: none;
+}
+
 @media (orientation: landscape) {
   #emoji-icons > div {
     -moz-margin-start: 0;
